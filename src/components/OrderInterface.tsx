@@ -537,7 +537,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                       type="button"
                       onClick={() => { setTipPercent(percent); setCustomTip(''); }}
                       className={`py-3 px-2 rounded-lg border-2 font-medium text-sm transition-all cursor-pointer ${
-                        tipPercent === percent && tipPercent !== 'custom'
+                        tipPercent === percent
                           ? 'border-[#C41E3A] bg-red-50 text-[#C41E3A]' 
                           : 'border-gray-200 text-gray-600 hover:border-gray-300'
                       }`}
@@ -902,9 +902,29 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                             const breadText = lunchBreadUpgrade 
                               ? (lunchBreadUpgrade === 'garlic' ? 'garlic naan' : lunchBreadUpgrade === 'onion' ? 'onion naan' : 'plain paratha')
                               : 'naan';
+                            
+                            // Determine specific lunch special name based on main course selection
+                            let lunchSpecialName = 'Lunch Special';
+                            const mainLower = lunchSpecialMain.toLowerCase();
+                            if (lunchSpecialMainType === 'veg') {
+                              // Veg & Chicken section
+                              if (mainLower.includes('chicken')) {
+                                lunchSpecialName = 'Chicken Lunch Special';
+                              } else {
+                                lunchSpecialName = 'Veg. Lunch Special';
+                              }
+                            } else {
+                              // Lamb & Seafood section
+                              if (mainLower.includes('lamb') || mainLower.includes('goat')) {
+                                lunchSpecialName = 'Lamb Lunch Special';
+                              } else {
+                                lunchSpecialName = 'Seafood Lunch Special';
+                              }
+                            }
+                            
                             addItem({
                               menuItemId: `lunch-special-${Date.now()}`,
-                              name: `Lunch Special`,
+                              name: lunchSpecialName,
                               price: totalPrice,
                               quantity: 1,
                               note: `Appetizer: ${lunchSpecialAppetizer}, Main: ${lunchSpecialMain}. Includes rice, ${breadText} & lentil of the day.`
