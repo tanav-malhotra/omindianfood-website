@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  sortOrder   Int        @default(0)
+  items       MenuItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model MenuItem {
+  id           String      @id @default(uuid())
+  categoryId   String
+  category     Category    @relation(fields: [categoryId], references: [id])
+  name         String
+  description  String?
+  price        Decimal
+  isSpicy      Boolean     @default(false)
+  isVegan      Boolean     @default(false)
+  isGlutenFree Boolean     @default(false)
+  imageUrl     String?
+  toastId      String? // ID in Toast POS
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  customerName  String
+  customerPhone String
+  type          String      @default("PICKUP") // PICKUP, DELIVERY
+  status        String      @default("NEW") // NEW, PENDING_PAYMENT, PAID, PAYMENT_FAILED, SUBMITTED, COMPLETED, CANCELLED
+  pickupTime    DateTime?
+  notes         String? // Overall order note
+  subtotal      Decimal?    // Subtotal before tax/tip
+  tax           Decimal?    // Tax amount
+  tip           Decimal?    // Tip amount
+  total         Decimal     // Grand total
+  transactionId String?     // Payment transaction ID
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id         String    @id @default(uuid())
+  orderId    String
+  order      Order     @relation(fields: [orderId], references: [id])
+  menuItemId String?   // Optional - null for custom items (lunch special, bar, catering)
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id])
+  quantity   Int
+  price      Decimal   // Snapshot of price
+  name       String    // Snapshot of name
+  note       String?   // Free text note
+}
