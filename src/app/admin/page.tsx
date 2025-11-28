@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
               <div className="border-t pt-4">
                 <h3 className="font-semibold mb-2">Items:</h3>
                 <ul className="space-y-2">
-                  {order.items.map(item => (
+                  {order.items.map((item: { id: string; quantity: number; name: string; note: string | null }) => (
                     <li key={item.id} className="flex justify-between items-start">
                       <div>
                         <span className="font-bold">{item.quantity}x</span> {item.name}
