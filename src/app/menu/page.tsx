@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   description: 'Browse our extensive menu of authentic Indian dishes.',
 };
 
-export const revalidate = 3600; 
+// Force dynamic rendering to avoid build-time database access
+export const dynamic = 'force-dynamic'; 
 
 // Lunch menu data (served 12:00 PM - 2:45 PM)
 const lunchMenu = {
@@ -73,7 +74,7 @@ const lunchMenu = {
     desserts: [
       { name: "Ras Malai", description: "Steamed cottage cheese dumplings with saffron milk", price: "$5" },
       { name: "Gulab Jamun", description: "Cake balls in a warm rose syrup", price: "$5" },
-      { name: "Kheer", description: "Almond & apple flavored rice pudding in cardamom", price: "$5" },
+      { name: "OM Kheer", description: "Almond & apple flavored rice pudding in cardamom", price: "$5" },
     ],
   },
 };
@@ -123,10 +124,56 @@ const barMenu = [
     ]
   },
   {
-    category: "Rosé & Bubbles",
+    category: "Rosé & Bubbles (Glass)",
     items: [
       { name: "Rosé, Mont Gravet", description: "Languedoc FR - Light pink with strawberries and raspberries", price: "$11" },
       { name: "Zardetto Spumante", description: "Veneto IT - Notes of pears, apples, and peaches", price: "$11" },
+    ]
+  },
+  {
+    category: "Wine by the Bottle - Red",
+    items: [
+      { name: "Cabernet Sauvignon, Ryder", description: "CA - Rich, smooth with hints of mocha, cherry and black berries", price: "$46" },
+      { name: "Rioja Crianza, Bujanda", description: "Rioja SP - Aromas of blackberry with spicy tones, mild tobacco", price: "$45" },
+      { name: "Chianti Classico, Cultusboni", description: "Tuscany IT - Medium body, bright red fruit, notes of cherries, cinnamon and clove", price: "$45" },
+      { name: "Valpolicella Classico Superiore, Zenato", description: "Veneto IT - Wild berries, blackcurrants, black cherries, hints of chocolate", price: "$46" },
+      { name: "Malbec Vista Flores, Catena", description: "Mendoza AR - Dark violet with floral notes of lavender, violet, and mocha", price: "$45" },
+      { name: "Cotes Du Rhone, Kermit Lynch", description: "FR - Rich purple, spice box and forest floor nose with robust dark fruits", price: "$46" },
+      { name: "Pinot Noir, Napa Valley", description: "Hand selected grapes, tradition and family heritage", price: "$45" },
+    ]
+  },
+  {
+    category: "Wine by the Bottle - White",
+    items: [
+      { name: "Pinot Grigio, Zenato", description: "Delle Venezia IT - Soft texture with hint of cantaloupe", price: "$45" },
+      { name: "Villa Maria Sauvignon Blanc", description: "Marlborough NZ - Aromas of gooseberry and passionfruit", price: "$46" },
+      { name: "Chardonnay, Black's Station", description: "CA - Flavors of melon, mango, and toasty oak", price: "$45" },
+      { name: "Dr. L Riesling", description: "Mosel DE - Bright, refreshing, fruit-driven with crisp finish", price: "$44" },
+      { name: "Grüner Veltliner, Stadt Krems", description: "Kremstal AT - Fresh with notes of green apple, lemon, radish, arugula", price: "$46" },
+    ]
+  },
+  {
+    category: "Wine by the Bottle - Rosé & Bubbles",
+    items: [
+      { name: "Rosé, Mont Gravet", description: "Languedoc FR - Light pink with strawberries and raspberries", price: "$42" },
+      { name: "Zardetto Spumante", description: "Veneto IT - Notes of pears, apples, and peaches", price: "$42" },
+    ]
+  },
+  {
+    category: "Reserve Wines",
+    items: [
+      { name: "Chateau Beau-Site", description: "Chateau FR - Dark ruby red with aromas of tobacco leaf, leather, and blackcurrant", price: "$80" },
+      { name: "Bordeaux Rouge, Beau Rivage", description: "Bordeaux FR - Ruby with violet reflections, fragrant blackberry, raspberry", price: "$45" },
+      { name: "Chateau Laplagnotte-Bellevue", description: "Bordeaux FR - Merlot and Cabernet Franc, black currant, black cherry, licorice", price: "$60" },
+      { name: "Chateau Gaudin", description: "Pauillac FR - Aromas of cider, ripe berries, and cherries with vanilla and leather", price: "$70" },
+      { name: "Chateauneuf Du Pape Rouge", description: "Domaine De La Solitude FR - Garrigue, flowers of cistus, cocoa and morello cherry", price: "$85" },
+    ]
+  },
+  {
+    category: "Half Bottles",
+    items: [
+      { name: "Cabernet Sauvignon, Textbook", description: "Napa Valley CA - Anise, blueberry, dried cranberry, and sage", price: "$30" },
+      { name: "Pinot Noir, King Estate", description: "Willamette Valley OR - Fresh fruits, mocha, toast, clove, graphite, and tea", price: "$30" },
     ]
   },
   {
@@ -139,28 +186,89 @@ const barMenu = [
     ]
   },
   {
-    category: "Spirits",
+    category: "Bourbon/Rye/Whiskey",
     items: [
       { name: "Old Crow", price: "$12" },
       { name: "Jack Daniels", price: "$13" },
       { name: "Woodford Reserve", price: "$15" },
       { name: "Makers Mark", price: "$15" },
       { name: "Jameson", price: "$15" },
+      { name: "Bulleit Rye", price: "$15" },
+    ]
+  },
+  {
+    category: "Blended Scotch",
+    items: [
       { name: "Johnnie Walker Black 12yrs", price: "$15" },
-      { name: "Jose Cuervo (Silver/Gold)", price: "$11" },
-      { name: "Don Julio Blanco", price: "$15" },
-      { name: "Silver Patron", price: "$15" },
-      { name: "Hendricks Gin", price: "$13" },
-      { name: "Bombay Sapphire", price: "$13" },
-      { name: "Titos Vodka", price: "$13" },
-      { name: "Grey Goose", price: "$15" },
-      { name: "Ketel One", price: "$14" },
-      { name: "Bacardi Rum", price: "$12" },
-      { name: "Captain Morgan", price: "$12" },
-      { name: "Hennessy VSOP", price: "$16" },
+    ]
+  },
+  {
+    category: "Single Malt Scotch",
+    items: [
       { name: "Macallan 12yrs", price: "$16" },
       { name: "Glenfiddich 12yrs", price: "$16" },
       { name: "Glenlivet 12yrs", price: "$16" },
+    ]
+  },
+  {
+    category: "Tequila",
+    items: [
+      { name: "Jose Cuervo (Silver/Gold)", price: "$11" },
+      { name: "Partida", price: "$12" },
+      { name: "Herradura", price: "$14" },
+      { name: "Don Julio Blanco", price: "$15" },
+      { name: "Silver Patron", price: "$15" },
+    ]
+  },
+  {
+    category: "Gin",
+    items: [
+      { name: "Hendricks", price: "$13" },
+      { name: "Bombay Sapphire", price: "$13" },
+      { name: "Tanqueray", price: "$13" },
+      { name: "Beefeater", price: "$13" },
+    ]
+  },
+  {
+    category: "Vodka",
+    items: [
+      { name: "Titos", price: "$13" },
+      { name: "Ketel One", price: "$14" },
+      { name: "Ketel One Citroen", price: "$14" },
+      { name: "Absolut", price: "$14" },
+      { name: "Grey Goose", price: "$15" },
+    ]
+  },
+  {
+    category: "Rum",
+    items: [
+      { name: "Bacardi", price: "$12" },
+      { name: "Captain Morgan", price: "$12" },
+    ]
+  },
+  {
+    category: "Cognac",
+    items: [
+      { name: "Hennessy VSOP", price: "$16" },
+    ]
+  },
+  {
+    category: "Liqueurs",
+    items: [
+      { name: "Baileys", price: "$10" },
+      { name: "St Germain", price: "$10" },
+      { name: "Domaine De Canton", price: "$10" },
+      { name: "Amaro Lucano", price: "$10" },
+      { name: "Peach Blossom", price: "$10" },
+      { name: "Sour Apple", price: "$10" },
+      { name: "Blue Curaçao", price: "$10" },
+      { name: "Campari", price: "$10" },
+    ]
+  },
+  {
+    category: "Dessert Wine",
+    items: [
+      { name: "Vietti Moscato D'Asti", description: "Taste of juicy yellow fruits (pears, apricots, and peaches) with floral scent", price: "$8" },
     ]
   },
 ];
@@ -283,7 +391,7 @@ const cateringMenu = [
     name: "Desserts & Beverages",
     items: [
       { name: "Gulab Jamun", description: "Soft dumplings of milk, flour simmered in simple syrup, rose water, cardamom.", perPiece: "$2.25/person" },
-      { name: "Kheer", description: "Almond and apple flavored rice pudding in cardamom.", halfTray: "$60.00", fullTray: "$140.00" },
+      { name: "OM Kheer", description: "Almond and apple flavored rice pudding in cardamom.", halfTray: "$60.00", fullTray: "$140.00" },
       { name: "Soda", description: "Diet Coke, Coke, Ginger Ale, Sprite.", perPiece: "$1.99/person" },
       { name: "Mango Lassi", description: "Refreshing mango yogurt drink.", perPiece: "$3.95/person" },
     ]
@@ -291,27 +399,34 @@ const cateringMenu = [
 ];
 
 export default async function MenuPage() {
-  const categories = await prisma.category.findMany({
-    include: {
-      items: true,
-    },
-    orderBy: {
-      sortOrder: 'asc',
-    },
-  });
+  let dinnerCategories: { id: string; name: string; items: { id: string; name: string; description: string | null; price: number; image: string | null }[] }[] = [];
+  
+  try {
+    const categories = await prisma.category.findMany({
+      include: {
+        items: true,
+      },
+      orderBy: {
+        sortOrder: 'asc',
+      },
+    });
 
-  // Convert Decimal to number for client component
-  const dinnerCategories = categories.map(cat => ({
-    id: cat.id,
-    name: cat.name,
-    items: cat.items.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      price: Number(item.price),
-      image: item.imageUrl,
-    }))
-  }));
+    // Convert Decimal to number for client component
+    dinnerCategories = categories.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      items: cat.items.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: Number(item.price),
+        image: item.imageUrl,
+      }))
+    }));
+  } catch (error) {
+    console.error('Database error:', error);
+    // Fallback: empty categories, lunch/bar/catering menus still work from static data
+  }
 
   return (
     <div className="bg-stone-50 min-h-screen">

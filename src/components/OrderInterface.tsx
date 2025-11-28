@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -8,9 +8,11 @@ type MenuItem = {
   id: string;
   name: string;
   description: string | null;
-  price: number;
+  price: number; // This is the take-out price
   image: string | null;
 };
+
+// Database stores take-out prices directly (the .95 prices)
 
 type Category = {
   id: string;
@@ -18,7 +20,7 @@ type Category = {
   items: MenuItem[];
 };
 
-type MenuType = "dinner" | "lunch" | "bar" | "catering";
+type MenuType = "takeout" | "catering";
 
 interface BarMenuItem {
   category: string;
@@ -63,18 +65,20 @@ interface OrderInterfaceProps {
 export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, cateringMenu }: OrderInterfaceProps) {
   const { items, addItem, removeItem, updateItem, total, clearCart } = useCart();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [imageError, setImageError] = useState(false);
   const [note, setNote] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [isCheckout, setIsCheckout] = useState(false);
-  const [menuType, setMenuType] = useState<MenuType>('dinner');
+  const [menuType, setMenuType] = useState<MenuType>('takeout');
   const [activeCategory, setActiveCategory] = useState(dinnerCategories[0]?.id || '');
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   
-  // Lunch Special Builder State
-  const [lunchSpecialAppetizer, setLunchSpecialAppetizer] = useState<string | null>(null);
-  const [lunchSpecialMain, setLunchSpecialMain] = useState<string | null>(null);
-  const [lunchSpecialMainType, setLunchSpecialMainType] = useState<'veg' | 'lamb'>('veg'); // veg/chicken = $17.95, lamb/seafood = $18.95
-  const [lunchBreadUpgrade, setLunchBreadUpgrade] = useState<string | null>(null); // null = regular naan, or 'garlic' | 'onion' | 'paratha' for +$1
+  // Note: Lunch Special is dine-in only and not available for online ordering
+  
+  // OM Special Builder State (for Take Out menu)
+  const [omSpecialAppetizer, setOmSpecialAppetizer] = useState<string | null>(null);
+  const [omSpecialEntree, setOmSpecialEntree] = useState<string | null>(null);
+  const [showOmSpecialBuilder, setShowOmSpecialBuilder] = useState(false);
   
   // Touch/swipe state for mobile cart drawer
   const touchStartY = useRef<number>(0);
@@ -117,20 +121,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
     isSwiping.current = false;
   };
   
-  // Check if lunch special is currently available (12:00 PM - 2:45 PM US Eastern Time)
-  const isLunchTime = () => {
-    // Get current time in US Eastern timezone
-    const now = new Date();
-    const easternTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    const hours = easternTime.getHours();
-    const minutes = easternTime.getMinutes();
-    const currentTime = hours * 60 + minutes; // Convert to minutes since midnight
-    const lunchStart = 12 * 60; // 12:00 PM = 720 minutes
-    const lunchEnd = 14 * 60 + 45; // 2:45 PM = 885 minutes
-    return currentTime >= lunchStart && currentTime <= lunchEnd;
-  };
-  
-  const lunchAvailable = isLunchTime();
+  // Note: Lunch special is dine-in only and not available for online ordering
   
   // Checkout Form State
   const [customerName, setCustomerName] = useState('');
@@ -153,9 +144,42 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   const [cardZip, setCardZip] = useState('');
   const [paymentError, setPaymentError] = useState('');
   
+  // Scheduling State (required for catering orders)
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
+  
+  // Check if cart has catering items or take out items
+  const hasCateringItems = items.some(item => item.menuItemId?.startsWith('catering-'));
+  const hasTakeOutItems = items.some(item => !item.menuItemId?.startsWith('catering-'));
+  
+  // Get minimum scheduled date (24 hours from now)
+  const getMinScheduledDate = () => {
+    const now = new Date();
+    now.setHours(now.getHours() + 24);
+    return now.toISOString().split('T')[0];
+  };
+  
+  // Catering delivery minimum (no delivery fee)
+  const CATERING_DELIVERY_MINIMUM = 75;
+  
+  // Delivery zone: Upper East Side Manhattan
+  // North: 100th Street, South: 63rd Street, West: 5th Avenue, East: East End Avenue
+  const DELIVERY_ZONE_DESCRIPTION = "63rd St to 100th St, between 5th Ave and East End Ave";
+  
   // NY Sales Tax Rate (8.875%)
   const TAX_RATE = 0.08875;
   const subtotal = total;
+  
+  // Check if catering delivery minimum is met
+  const cateringDeliveryAllowed = !hasCateringItems || subtotal >= CATERING_DELIVERY_MINIMUM;
+  
+  // Auto-switch to pickup if catering delivery minimum is not met
+  useEffect(() => {
+    if (hasCateringItems && orderType === 'DELIVERY' && !cateringDeliveryAllowed) {
+      setOrderType('PICKUP');
+    }
+  }, [hasCateringItems, cateringDeliveryAllowed, orderType]);
+  
   const taxAmount = subtotal * TAX_RATE;
   const tipAmount = tipPercent === 'custom' 
     ? (customTipType === '$' 
@@ -167,25 +191,15 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   const router = useRouter();
 
   const menuTypes: { id: MenuType; label: string }[] = [
-    { id: "lunch", label: "Lunch" },
-    { id: "dinner", label: "Dinner" },
-    { id: "bar", label: "Bar" },
+    { id: "takeout", label: "Take Out" },
     { id: "catering", label: "Catering" },
   ];
 
   // Get categories based on menu type
   const getCurrentCategories = () => {
     switch (menuType) {
-      case 'dinner':
+      case 'takeout':
         return dinnerCategories.map(c => ({ id: c.id, name: c.name }));
-      case 'lunch':
-        return [
-          { id: 'lunch-appetizers', name: 'Appetizers' },
-          { id: 'lunch-veg-chicken', name: 'Veg & Chicken' },
-          { id: 'lunch-lamb-seafood', name: 'Lamb & Seafood' },
-        ];
-      case 'bar':
-        return barMenu.map((s, i) => ({ id: `bar-${i}`, name: s.category }));
       case 'catering':
         return cateringMenu.map((s, i) => ({ id: `catering-${i}`, name: s.name }));
       default:
@@ -201,6 +215,22 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
 
   const confirmAddItem = () => {
     if (!selectedItem) return;
+    
+    // Check if trying to mix catering with take out items
+    const isCateringItem = selectedItem.id.startsWith('catering-');
+    
+    if (isCateringItem && hasTakeOutItems) {
+      alert('Catering items cannot be mixed with take out items. Please place separate orders for catering and take out.');
+      setSelectedItem(null);
+      return;
+    }
+    
+    if (!isCateringItem && hasCateringItems) {
+      alert('Take out items cannot be mixed with catering items. Please place separate orders for catering and take out.');
+      setSelectedItem(null);
+      return;
+    }
+    
     addItem({
       menuItemId: selectedItem.id,
       name: selectedItem.name,
@@ -235,6 +265,24 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
+    
+    // Validate scheduling for catering orders
+    if (hasCateringItems) {
+      if (!scheduledDate || !scheduledTime) {
+        setPaymentError('Catering orders require a scheduled date and time (at least 24 hours in advance)');
+        return;
+      }
+      
+      // Verify the scheduled time is at least 24 hours from now
+      const scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
+      const minDateTime = new Date();
+      minDateTime.setHours(minDateTime.getHours() + 24);
+      
+      if (scheduledDateTime < minDateTime) {
+        setPaymentError('Catering orders must be scheduled at least 24 hours in advance');
+        return;
+      }
+    }
     
     // Validate card details
     const cleanCardNumber = cardNumber.replace(/\s/g, '');
@@ -294,7 +342,10 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
           apt: deliveryApt,
           city: deliveryCity,
           zip: deliveryZip
-        } : undefined
+        } : undefined,
+        scheduledDateTime: hasCateringItems && scheduledDate && scheduledTime 
+          ? new Date(`${scheduledDate}T${scheduledTime}`).toISOString() 
+          : undefined
       };
 
       const res = await fetch('/api/payment', {
@@ -371,11 +422,14 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                 </button>
                 <button
                   type="button"
-                  onClick={() => setOrderType('DELIVERY')}
-                  className={`py-4 px-4 rounded-xl border-2 font-medium transition-all flex items-center justify-center gap-3 cursor-pointer ${
-                    orderType === 'DELIVERY' 
-                      ? 'border-[#C41E3A] bg-red-50 text-[#C41E3A]' 
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  onClick={() => cateringDeliveryAllowed && setOrderType('DELIVERY')}
+                  disabled={!cateringDeliveryAllowed}
+                  className={`py-4 px-4 rounded-xl border-2 font-medium transition-all flex items-center justify-center gap-3 ${
+                    !cateringDeliveryAllowed
+                      ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : orderType === 'DELIVERY' 
+                        ? 'border-[#C41E3A] bg-red-50 text-[#C41E3A] cursor-pointer' 
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300 cursor-pointer'
                   }`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,6 +438,20 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                   Delivery
                 </button>
               </div>
+              {/* Catering delivery minimum message */}
+              {hasCateringItems && !cateringDeliveryAllowed && (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800 flex items-center gap-2">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>
+                      <strong>Minimum order of ${CATERING_DELIVERY_MINIMUM} required for catering delivery.</strong>
+                      {' '}Add ${(CATERING_DELIVERY_MINIMUM - subtotal).toFixed(2)} more to enable delivery.
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
 
             <form onSubmit={handleCheckout} className="space-y-5">
@@ -472,8 +540,59 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    We deliver to Manhattan&apos;s Upper East Side and surrounding areas. Call us at (212) 628-4500 to confirm delivery availability.
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800 flex items-start gap-2">
+                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span>
+                        <strong>Delivery Area:</strong> {DELIVERY_ZONE_DESCRIPTION}
+                        <br />
+                        <span className="text-blue-600 text-xs">Questions? Call (212) 628-4500</span>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Catering Scheduling (Required for catering orders) */}
+              {hasCateringItems && (
+                <div className="space-y-4 p-4 bg-amber-50 border-2 border-amber-400 rounded-xl">
+                  <div className="flex items-center gap-2 text-amber-800">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 className="font-semibold">Schedule Your Catering Order</h3>
+                  </div>
+                  <p className="text-sm text-amber-700">
+                    Catering orders must be scheduled at least 24 hours in advance.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                      <input 
+                        required 
+                        type="date" 
+                        value={scheduledDate} 
+                        onChange={e => setScheduledDate(e.target.value)}
+                        min={getMinScheduledDate()}
+                        className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Time *</label>
+                      <input 
+                        required 
+                        type="time" 
+                        value={scheduledTime} 
+                        onChange={e => setScheduledTime(e.target.value)}
+                        className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-amber-600">
+                    Please call (212) 628-4500 to confirm availability for your event date.
                   </p>
                 </div>
               )}
@@ -771,9 +890,127 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
 
         {/* Menu Items Section */}
         <div className="flex-1 min-w-0">
-          {/* Dinner Menu */}
-          {menuType === 'dinner' && (
+          {/* Take Out Menu */}
+          {menuType === 'takeout' && (
             <div className="space-y-8">
+              {/* OM Special Deal */}
+              <div className="bg-[#C41E3A] text-white p-6 rounded-2xl">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold">OM SPECIAL</h2>
+                    <p className="text-white/90 text-xl font-semibold">$18.95</p>
+                    <p className="text-white/80 text-sm mt-1">
+                      One Appetizer + One Entrée • Includes basmati rice, naan bread, raita & mango chutney
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowOmSpecialBuilder(!showOmSpecialBuilder)}
+                    className="bg-white text-[#C41E3A] px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    {showOmSpecialBuilder ? 'Hide Builder' : 'Build Your OM Special'}
+                  </button>
+                </div>
+                
+                {showOmSpecialBuilder && (
+                  <div className="mt-6 bg-white/10 rounded-xl p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Appetizer Selection */}
+                      <div>
+                        <h3 className="font-semibold text-lg mb-3">1. Choose Appetizer</h3>
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                          {dinnerCategories
+                            .filter(c => c.name.toLowerCase().includes('appetizer'))
+                            .flatMap(c => c.items)
+                            .map((item, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setOmSpecialAppetizer(item.name)}
+                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                                  omSpecialAppetizer === item.name 
+                                    ? 'bg-white text-[#C41E3A] font-semibold' 
+                                    : 'bg-white/20 hover:bg-white/30'
+                                }`}
+                              >
+                                {omSpecialAppetizer === item.name && (
+                                  <span className="mr-2">✓</span>
+                                )}
+                                {item.name}
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                      
+                      {/* Entrée Selection */}
+                      <div>
+                        <h3 className="font-semibold text-lg mb-3">2. Choose Entrée</h3>
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                          {dinnerCategories
+                            .filter(c => c.name.toLowerCase().includes('main course') || c.name.toLowerCase().includes('entree'))
+                            .flatMap(c => c.items)
+                            .map((item, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setOmSpecialEntree(item.name)}
+                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                                  omSpecialEntree === item.name 
+                                    ? 'bg-white text-[#C41E3A] font-semibold' 
+                                    : 'bg-white/20 hover:bg-white/30'
+                                }`}
+                              >
+                                {omSpecialEntree === item.name && (
+                                  <span className="mr-2">✓</span>
+                                )}
+                                {item.name}
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Summary and Add to Cart */}
+                    <div className="mt-4 pt-4 border-t border-white/20 flex flex-col sm:flex-row justify-between items-center gap-4">
+                      <div className="text-sm">
+                        <span className={omSpecialAppetizer ? 'text-green-300' : 'text-white/60'}>
+                          {omSpecialAppetizer ? `✓ ${omSpecialAppetizer}` : '① Pick Appetizer'}
+                        </span>
+                        <span className="mx-2">+</span>
+                        <span className={omSpecialEntree ? 'text-green-300' : 'text-white/60'}>
+                          {omSpecialEntree ? `✓ ${omSpecialEntree}` : '② Pick Entrée'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (omSpecialAppetizer && omSpecialEntree) {
+                            if (hasCateringItems) {
+                              alert('Take out items cannot be mixed with catering items. Please place separate orders for catering and take out.');
+                              return;
+                            }
+                            addItem({
+                              menuItemId: `om-special-${Date.now()}`,
+                              name: 'OM Special',
+                              price: 18.95,
+                              quantity: 1,
+                              note: `Appetizer: ${omSpecialAppetizer}, Entrée: ${omSpecialEntree}. Includes basmati rice, naan bread, raita & mango chutney.`
+                            });
+                            setOmSpecialAppetizer(null);
+                            setOmSpecialEntree(null);
+                            setShowOmSpecialBuilder(false);
+                          }
+                        }}
+                        disabled={!omSpecialAppetizer || !omSpecialEntree}
+                        className={`px-6 py-3 rounded-lg font-bold transition-all cursor-pointer ${
+                          omSpecialAppetizer && omSpecialEntree
+                            ? 'bg-white text-[#C41E3A] hover:bg-gray-100'
+                            : 'bg-white/30 text-white/60 cursor-not-allowed'
+                        }`}
+                      >
+                        Add to Cart • $18.95
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {dinnerCategories.map(category => (
                 <div key={category.id} id={`cat-${category.id}`} className="scroll-mt-24">
                   <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -820,573 +1057,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
             </div>
           )}
 
-          {/* Lunch Menu */}
-          {menuType === 'lunch' && (
-            <div className="space-y-6">
-              {/* Lunch Special Header */}
-              <div className={`${lunchAvailable ? 'bg-[#C41E3A]' : 'bg-gray-500'} text-white p-6 rounded-2xl`}>
-                <h2 className="text-2xl font-bold mb-2 text-center">
-                  {lunchAvailable ? 'BUILD YOUR LUNCH SPECIAL' : 'LUNCH SPECIAL'}
-                </h2>
-                <p className="text-white/90 mb-4 text-center">{lunchMenu.hours}</p>
-                
-                {!lunchAvailable && (
-                  <div className="bg-white/20 rounded-lg p-4 mb-4 text-center">
-                    <p className="font-semibold text-lg">⏰ Currently Unavailable</p>
-                    <p className="text-sm text-white/80 mt-1">
-                      Lunch special can only be ordered between 12:00 PM - 2:45 PM
-                    </p>
-                  </div>
-                )}
-                
-                <div className="flex justify-center gap-6 flex-wrap mb-4">
-                  <div className={`px-6 py-3 rounded-lg text-center transition-all ${lunchSpecialMainType === 'veg' ? 'bg-white text-[#C41E3A]' : 'bg-white/20'}`}>
-                    <span className="font-bold text-xl">{lunchMenu.pricing.veg}</span>
-                    <p className="text-sm mt-1">Veg or Chicken</p>
-                  </div>
-                  <div className={`px-6 py-3 rounded-lg text-center transition-all ${lunchSpecialMainType === 'lamb' ? 'bg-white text-[#C41E3A]' : 'bg-white/20'}`}>
-                    <span className="font-bold text-xl">{lunchMenu.pricing.lamb}</span>
-                    <p className="text-sm mt-1">Lamb or Seafood</p>
-                  </div>
-                </div>
-
-                <div className="bg-white/10 rounded-lg p-4 mt-4">
-                  <p className="text-sm text-center text-white/90">
-                    Pick <span className="font-bold">1 Appetizer</span> + <span className="font-bold">1 Main Course</span>
-                  </p>
-                  <p className="text-sm text-center text-white/80 mt-2">{lunchMenu.includes}</p>
-                </div>
-              </div>
-
-              {/* Selection Summary - Sticky */}
-              <div className="bg-white rounded-2xl shadow-lg p-4 sticky top-20 z-20 border-2 border-[#C41E3A]">
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex-grow">
-                      <p className="text-sm text-gray-500 mb-2">Your Lunch Special:</p>
-                      <div className="flex flex-wrap gap-2">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${lunchSpecialAppetizer ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
-                          {lunchSpecialAppetizer ? `✓ ${lunchSpecialAppetizer}` : '① Pick Appetizer'}
-                        </span>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${lunchSpecialMain ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
-                          {lunchSpecialMain ? `✓ ${lunchSpecialMain}` : '② Pick Main Course'}
-                        </span>
-                        {lunchBreadUpgrade && (
-                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800">
-                            +$1 {lunchBreadUpgrade === 'garlic' ? 'Garlic Naan' : lunchBreadUpgrade === 'onion' ? 'Onion Naan' : 'Plain Paratha'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {(lunchSpecialAppetizer || lunchSpecialMain || lunchBreadUpgrade) && (
-                        <button
-                          onClick={() => {
-                            setLunchSpecialAppetizer(null);
-                            setLunchSpecialMain(null);
-                            setLunchSpecialMainType('veg');
-                            setLunchBreadUpgrade(null);
-                          }}
-                          className="text-gray-500 hover:text-gray-700 text-sm underline cursor-pointer"
-                        >
-                          Clear
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (lunchAvailable && lunchSpecialAppetizer && lunchSpecialMain) {
-                            const basePrice = lunchSpecialMainType === 'lamb' ? 18.95 : 17.95;
-                            const upgradePrice = lunchBreadUpgrade ? 1 : 0;
-                            const totalPrice = basePrice + upgradePrice;
-                            const breadText = lunchBreadUpgrade 
-                              ? (lunchBreadUpgrade === 'garlic' ? 'garlic naan' : lunchBreadUpgrade === 'onion' ? 'onion naan' : 'plain paratha')
-                              : 'naan';
-                            
-                            // Determine specific lunch special name based on main course selection
-                            let lunchSpecialName = 'Lunch Special';
-                            const mainLower = lunchSpecialMain.toLowerCase();
-                            if (lunchSpecialMainType === 'veg') {
-                              // Veg & Chicken section
-                              if (mainLower.includes('chicken')) {
-                                lunchSpecialName = 'Chicken Lunch Special';
-                              } else {
-                                lunchSpecialName = 'Veg. Lunch Special';
-                              }
-                            } else {
-                              // Lamb & Seafood section
-                              if (mainLower.includes('lamb') || mainLower.includes('goat')) {
-                                lunchSpecialName = 'Lamb Lunch Special';
-                              } else {
-                                lunchSpecialName = 'Seafood Lunch Special';
-                              }
-                            }
-                            
-                            addItem({
-                              menuItemId: `lunch-special-${Date.now()}`,
-                              name: lunchSpecialName,
-                              price: totalPrice,
-                              quantity: 1,
-                              note: `Appetizer: ${lunchSpecialAppetizer}, Main: ${lunchSpecialMain}. Includes rice, ${breadText} & lentil of the day.`
-                            });
-                            setLunchSpecialAppetizer(null);
-                            setLunchSpecialMain(null);
-                            setLunchSpecialMainType('veg');
-                            setLunchBreadUpgrade(null);
-                          }
-                        }}
-                        disabled={!lunchAvailable || !lunchSpecialAppetizer || !lunchSpecialMain}
-                        className={`px-6 py-3 rounded-xl font-bold transition-all cursor-pointer ${
-                          lunchAvailable && lunchSpecialAppetizer && lunchSpecialMain
-                            ? 'bg-[#C41E3A] text-white hover:bg-[#a01830] shadow-lg'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        }`}
-                      >
-                        {lunchAvailable 
-                          ? `Add to Cart • $${((lunchSpecialMainType === 'lamb' ? 18.95 : 17.95) + (lunchBreadUpgrade ? 1 : 0)).toFixed(2)}`
-                          : 'Not Available Now'
-                        }
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Bread Upgrade Option */}
-                  <div className="border-t pt-3">
-                    <p className="text-sm text-gray-600 mb-2">Bread option (included: regular naan)</p>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setLunchBreadUpgrade(null)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer select-none active:scale-[0.98] ${
-                          !lunchBreadUpgrade 
-                            ? 'bg-[#C41E3A] text-white' 
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
-                        }`}
-                      >
-                        Regular Naan
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLunchBreadUpgrade('garlic')}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer select-none active:scale-[0.98] ${
-                          lunchBreadUpgrade === 'garlic' 
-                            ? 'bg-[#C41E3A] text-white' 
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
-                        }`}
-                      >
-                        Garlic Naan +$1
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLunchBreadUpgrade('onion')}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer select-none active:scale-[0.98] ${
-                          lunchBreadUpgrade === 'onion' 
-                            ? 'bg-[#C41E3A] text-white' 
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
-                        }`}
-                      >
-                        Onion Naan +$1
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLunchBreadUpgrade('paratha')}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer select-none active:scale-[0.98] ${
-                          lunchBreadUpgrade === 'paratha' 
-                            ? 'bg-[#C41E3A] text-white' 
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
-                        }`}
-                      >
-                        Plain Paratha +$1
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Appetizers Section */}
-              <div id="cat-lunch-appetizers" className="bg-white rounded-2xl shadow-lg overflow-hidden scroll-mt-48">
-                <div className="bg-[#1A1A1A] px-6 py-4">
-                  <h2 className="text-xl font-bold text-white">Step 1: Choose Your Appetizer</h2>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {lunchMenu.sections[0]?.items.map((item, itemIdx) => (
-                      <button
-                        key={itemIdx}
-                        type="button"
-                        onClick={() => setLunchSpecialAppetizer(item.name)}
-                        className={`text-left p-4 rounded-xl transition-all cursor-pointer active:scale-[0.98] select-none ${
-                          lunchSpecialAppetizer === item.name
-                            ? 'bg-[#C41E3A] text-white shadow-lg'
-                            : 'bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 pointer-events-none">
-                          {lunchSpecialAppetizer === item.name && (
-                            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                          <h3 className={`font-semibold ${lunchSpecialAppetizer === item.name ? 'text-white' : 'text-gray-900'}`}>
-                            {item.name}
-                          </h3>
-                        </div>
-                        {item.description && (
-                          <p className={`text-sm mt-1 pointer-events-none ${lunchSpecialAppetizer === item.name ? 'text-white/80' : 'text-gray-500'}`}>
-                            {item.description}
-                          </p>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Main Courses - Veg & Chicken */}
-              <div id="cat-lunch-veg-chicken" className="bg-white rounded-2xl shadow-lg overflow-hidden scroll-mt-48">
-                <div className="bg-[#1A1A1A] px-6 py-4">
-                  <h2 className="text-xl font-bold text-white">Step 2: Choose Your Main Course</h2>
-                  <p className="text-white/70 text-sm">Veg & Chicken options • {lunchMenu.pricing.veg}</p>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {lunchMenu.sections[1]?.items.map((item, itemIdx) => (
-                      <button
-                        key={`veg-${itemIdx}`}
-                        type="button"
-                        onClick={() => {
-                          setLunchSpecialMain(item.name);
-                          setLunchSpecialMainType('veg');
-                        }}
-                        className={`text-left p-4 rounded-xl transition-all cursor-pointer active:scale-[0.98] select-none ${
-                          lunchSpecialMain === item.name && lunchSpecialMainType === 'veg'
-                            ? 'bg-[#C41E3A] text-white shadow-lg'
-                            : 'bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 pointer-events-none">
-                          {lunchSpecialMain === item.name && lunchSpecialMainType === 'veg' && (
-                            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                          <h3 className={`font-semibold ${lunchSpecialMain === item.name && lunchSpecialMainType === 'veg' ? 'text-white' : 'text-gray-900'}`}>
-                            {item.name}
-                          </h3>
-                        </div>
-                        {item.description && (
-                          <p className={`text-sm mt-1 pointer-events-none ${lunchSpecialMain === item.name && lunchSpecialMainType === 'veg' ? 'text-white/80' : 'text-gray-500'}`}>
-                            {item.description}
-                          </p>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Main Courses - Lamb & Seafood */}
-              <div id="cat-lunch-lamb-seafood" className="bg-white rounded-2xl shadow-lg overflow-hidden scroll-mt-48">
-                <div className="bg-[#1A1A1A] px-6 py-4">
-                  <h2 className="text-xl font-bold text-white">Or Choose Lamb & Seafood</h2>
-                  <p className="text-white/70 text-sm">Premium options • {lunchMenu.pricing.lamb}</p>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {lunchMenu.sections[2]?.items.map((item, itemIdx) => (
-                      <button
-                        key={`lamb-${itemIdx}`}
-                        type="button"
-                        onClick={() => {
-                          setLunchSpecialMain(item.name);
-                          setLunchSpecialMainType('lamb');
-                        }}
-                        className={`text-left p-4 rounded-xl transition-all cursor-pointer active:scale-[0.98] select-none ${
-                          lunchSpecialMain === item.name && lunchSpecialMainType === 'lamb'
-                            ? 'bg-[#C41E3A] text-white shadow-lg'
-                            : 'bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 pointer-events-none">
-                          {lunchSpecialMain === item.name && lunchSpecialMainType === 'lamb' && (
-                            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                          <h3 className={`font-semibold ${lunchSpecialMain === item.name && lunchSpecialMainType === 'lamb' ? 'text-white' : 'text-gray-900'}`}>
-                            {item.name}
-                          </h3>
-                        </div>
-                        {item.description && (
-                          <p className={`text-sm mt-1 pointer-events-none ${lunchSpecialMain === item.name && lunchSpecialMainType === 'lamb' ? 'text-white/80' : 'text-gray-500'}`}>
-                            {item.description}
-                          </p>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-center text-gray-500 text-sm italic mb-8">
-                Lunch special includes basmati rice, naan bread, and lentil of the day
-              </p>
-
-              {/* Happy Hour Section */}
-              <div className="bg-[#1A1A1A] text-white p-6 rounded-2xl text-center mb-6">
-                <h2 className="text-2xl font-bold">LUNCHTIME HAPPY HOUR</h2>
-                <p className="text-white/70 mt-2">Click any item to add to your order</p>
-              </div>
-
-              {/* Wines */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                <div className="bg-[#1A1A1A] px-6 py-4">
-                  <h2 className="text-xl font-bold text-white">Wines</h2>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {lunchMenu.happyHour.wines.map((wine, idx) => {
-                      const priceNum = parseFloat(wine.price.replace('$', ''));
-                      return (
-                        <div
-                          key={idx}
-                          className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all cursor-pointer group"
-                          onClick={() => handleAddToOrderClick({
-                            id: `lunch-wine-${idx}`,
-                            name: wine.name,
-                            description: wine.description || null,
-                            price: priceNum,
-                            image: null
-                          })}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-grow pr-4">
-                              <h3 className="font-semibold text-gray-900 group-hover:text-[#C41E3A] transition-colors">
-                                {wine.name}
-                              </h3>
-                              {wine.description && (
-                                <p className="text-gray-500 text-sm mt-1">{wine.description}</p>
-                              )}
-                              <p className="text-[#C41E3A] font-bold mt-2">{wine.price}</p>
-                            </div>
-                            <button 
-                              className="flex-shrink-0 w-10 h-10 bg-[#C41E3A] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#a01830] transition-colors cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToOrderClick({
-                                  id: `lunch-wine-${idx}`,
-                                  name: wine.name,
-                                  description: wine.description || null,
-                                  price: priceNum,
-                                  image: null
-                                });
-                              }}
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Beverages */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                <div className="bg-[#1A1A1A] px-6 py-4">
-                  <h2 className="text-xl font-bold text-white">Non-Alcoholic Beverages</h2>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {lunchMenu.happyHour.beverages.map((bev, idx) => {
-                      const priceNum = parseFloat(bev.price.replace('$', ''));
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => handleAddToOrderClick({
-                            id: `lunch-bev-${idx}`,
-                            name: bev.name,
-                            description: null,
-                            price: priceNum,
-                            image: null
-                          })}
-                          className="flex justify-between items-center py-3 px-4 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors active:scale-[0.98]"
-                        >
-                          <span className="font-medium text-gray-900">{bev.name}</span>
-                          <span className="text-[#C41E3A] font-bold">{bev.price}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Beers */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                <div className="bg-[#1A1A1A] px-6 py-4">
-                  <h2 className="text-xl font-bold text-white">Beers</h2>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    {lunchMenu.happyHour.beers.map((beer, idx) => {
-                      const priceNum = parseFloat(beer.price.replace('$', ''));
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => handleAddToOrderClick({
-                            id: `lunch-beer-${idx}`,
-                            name: beer.name,
-                            description: null,
-                            price: priceNum,
-                            image: null
-                          })}
-                          className="flex justify-between items-center py-3 px-4 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors active:scale-[0.98]"
-                        >
-                          <span className="font-medium text-gray-900">{beer.name}</span>
-                          <span className="text-[#C41E3A] font-bold">{beer.price}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Desserts */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                <div className="bg-[#1A1A1A] px-6 py-4">
-                  <h2 className="text-xl font-bold text-white">Desserts</h2>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {lunchMenu.happyHour.desserts.map((dessert, idx) => {
-                      const priceNum = parseFloat(dessert.price.replace('$', ''));
-                      return (
-                        <div
-                          key={idx}
-                          className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all cursor-pointer group"
-                          onClick={() => handleAddToOrderClick({
-                            id: `lunch-dessert-${idx}`,
-                            name: dessert.name,
-                            description: dessert.description || null,
-                            price: priceNum,
-                            image: null
-                          })}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-grow pr-4">
-                              <h3 className="font-semibold text-gray-900 group-hover:text-[#C41E3A] transition-colors">
-                                {dessert.name}
-                              </h3>
-                              {dessert.description && (
-                                <p className="text-gray-500 text-sm mt-1">{dessert.description}</p>
-                              )}
-                              <p className="text-[#C41E3A] font-bold mt-2">{dessert.price}</p>
-                            </div>
-                            <button 
-                              className="flex-shrink-0 w-10 h-10 bg-[#C41E3A] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#a01830] transition-colors cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToOrderClick({
-                                  id: `lunch-dessert-${idx}`,
-                                  name: dessert.name,
-                                  description: dessert.description || null,
-                                  price: priceNum,
-                                  image: null
-                                });
-                              }}
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-center text-gray-500 text-sm italic">
-                Please speak to our staff regarding food allergies/intolerances before ordering
-              </p>
-            </div>
-          )}
-
-          {/* Bar Menu */}
-          {menuType === 'bar' && (
-            <div className="space-y-8">
-              <div className="bg-[#1A1A1A] text-white p-4 rounded-xl text-center">
-                <p className="text-sm">Must be 21+ to consume alcohol. Valid ID required.</p>
-              </div>
-              
-              {barMenu.map((section, idx) => (
-                <div key={idx} id={`cat-bar-${idx}`} className="scroll-mt-24 bg-white rounded-2xl shadow-lg overflow-hidden">
-                  <div className="bg-[#1A1A1A] px-6 py-4">
-                    <h2 className="text-xl font-bold text-white">{section.category}</h2>
-                  </div>
-                  <div className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {section.items.map((item, itemIdx) => {
-                        const priceNum = parseFloat(item.price.replace('$', ''));
-                        return (
-                          <div
-                            key={itemIdx}
-                            className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all cursor-pointer group"
-                            onClick={() => handleAddToOrderClick({
-                              id: `bar-${idx}-${itemIdx}`,
-                              name: item.name,
-                              description: item.description || null,
-                              price: priceNum,
-                              image: null
-                            })}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="flex-grow pr-4">
-                                <h3 className="font-semibold text-gray-900 group-hover:text-[#C41E3A] transition-colors">
-                                  {item.name}
-                                </h3>
-                                {item.description && (
-                                  <p className="text-gray-500 text-sm mt-1 line-clamp-2">{item.description}</p>
-                                )}
-                                <p className="text-[#C41E3A] font-bold mt-2">{item.price}</p>
-                              </div>
-                              <button 
-                                className="flex-shrink-0 w-10 h-10 bg-[#C41E3A] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#a01830] transition-colors cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAddToOrderClick({
-                                    id: `bar-${idx}-${itemIdx}`,
-                                    name: item.name,
-                                    description: item.description || null,
-                                    price: priceNum,
-                                    image: null
-                                  });
-                                }}
-                              >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              <p className="text-center text-gray-500 text-sm italic">
-                Drinks will be added to your order
-              </p>
-            </div>
-          )}
+          {/* Note: Lunch Special and Bar Menu are dine-in only and not available for online ordering */}
 
           {/* Catering Menu */}
           {menuType === 'catering' && (
@@ -1771,12 +1442,35 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <button 
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      onClick={() => setQuantity(Math.max(0, quantity - 1))}
                       className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
                     >−</button>
-                    <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={quantity === 0 ? '' : quantity.toString()}
+                      onFocus={(e) => {
+                        if (quantity === 0) e.target.value = '';
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value === '' || parseInt(e.target.value, 10) === 0) {
+                          setQuantity(0);
+                        }
+                      }}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, ''); // Only digits
+                        if (rawValue === '') {
+                          setQuantity(0);
+                        } else {
+                          setQuantity(parseInt(rawValue, 10));
+                        }
+                      }}
+                      placeholder="0"
+                      className="w-20 h-12 text-2xl font-bold text-center bg-white border-2 border-gray-200 rounded-xl focus:border-[#C41E3A] focus:ring-0 outline-none"
+                    />
                     <button 
                       onClick={() => setQuantity(quantity + 1)}
                       className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
@@ -1789,7 +1483,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                   <textarea 
                     value={note}
                     onChange={e => setNote(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent text-sm resize-none"
+                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent text-sm resize-none"
                     rows={3}
                     placeholder="e.g. Extra spicy, no onions, allergies..."
                   />
@@ -1800,7 +1494,12 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
             <div className="p-6 pt-0">
               <button 
                 onClick={confirmAddItem}
-                className="w-full bg-[#C41E3A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#a01830] transition-colors shadow-lg cursor-pointer"
+                disabled={quantity === 0}
+                className={`w-full py-4 rounded-xl font-bold text-lg transition-colors shadow-lg ${
+                  quantity === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#C41E3A] text-white hover:bg-[#a01830] cursor-pointer'
+                }`}
               >
                 Add to Order • ${(selectedItem.price * quantity).toFixed(2)}
               </button>

@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   description: 'Place your order online for pickup or delivery.',
 };
 
-export const revalidate = 3600;
+// Force dynamic rendering to avoid build-time database access
+export const dynamic = 'force-dynamic';
 
 // Lunch menu data (served 12:00 PM - 2:45 PM)
 const lunchMenu = {
@@ -73,7 +74,7 @@ const lunchMenu = {
     desserts: [
       { name: "Ras Malai", description: "Steamed cottage cheese dumplings with saffron milk", price: "$5" },
       { name: "Gulab Jamun", description: "Cake balls in a warm rose syrup", price: "$5" },
-      { name: "Kheer", description: "Almond & apple flavored rice pudding in cardamom", price: "$5" },
+      { name: "OM Kheer", description: "Almond & apple flavored rice pudding in cardamom", price: "$5" },
     ],
   },
 };
@@ -233,7 +234,7 @@ const cateringMenu = [
     name: "Desserts & Beverages",
     items: [
       { name: "Gulab Jamun", description: "Soft dumplings of milk, flour simmered in rose water, cardamom.", perPiece: "$2.25/person" },
-      { name: "Kheer", description: "Almond and apple flavored rice pudding in cardamom.", halfTray: "$60.00", fullTray: "$140.00" },
+      { name: "OM Kheer", description: "Almond and apple flavored rice pudding in cardamom.", halfTray: "$60.00", fullTray: "$140.00" },
       { name: "Soda", description: "Diet Coke, Coke, Ginger Ale, Sprite.", perPiece: "$1.99/person" },
       { name: "Mango Lassi", description: "Refreshing mango yogurt drink.", perPiece: "$3.95/person" },
     ]
@@ -256,12 +257,18 @@ function serializeCategories(categories: any[]) {
 }
 
 export default async function OrderPage() {
-  const categories = await prisma.category.findMany({
-    include: { items: true },
-    orderBy: { sortOrder: 'asc' }
-  });
+  let dinnerCategories: ReturnType<typeof serializeCategories> = [];
   
-  const dinnerCategories = serializeCategories(categories);
+  try {
+    const categories = await prisma.category.findMany({
+      include: { items: true },
+      orderBy: { sortOrder: 'asc' }
+    });
+    dinnerCategories = serializeCategories(categories);
+  } catch (error) {
+    console.error('Database error:', error);
+    // Fallback: empty dinner categories, other menus still work from static data
+  }
   
   return (
     <div className="bg-stone-50 min-h-screen w-full max-w-full overflow-x-hidden">

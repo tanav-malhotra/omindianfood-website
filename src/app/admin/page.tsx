@@ -11,15 +11,23 @@ async function updateStatus(orderId: string, newStatus: string) {
   revalidatePath('/admin');
 }
 
-// Revalidate often for live-ish updates
-export const revalidate = 60;
+// Force dynamic rendering to avoid build-time database access
+export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboard() {
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: 'desc' },
-    include: { items: true },
-    take: 50
-  });
+  let orders: any[] = [];
+  let dbError = false;
+  
+  try {
+    orders = await prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { items: true },
+      take: 50
+    });
+  } catch (error) {
+    console.error('Database error:', error);
+    dbError = true;
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen p-8">
@@ -30,6 +38,12 @@ export default async function AdminDashboard() {
             Refresh
           </button>
         </div>
+
+        {dbError && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+            <strong>Note:</strong> Database connection unavailable. Orders will appear once database is configured.
+          </div>
+        )}
 
         <div className="space-y-6">
           {orders.map(order => (
