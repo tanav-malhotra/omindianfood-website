@@ -1,4 +1,3 @@
-import { prisma } from '@/lib/prisma';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import MenuDisplay from '@/components/MenuDisplay';
@@ -8,10 +7,215 @@ export const metadata: Metadata = {
   description: 'Browse our extensive menu of authentic Indian dishes.',
 };
 
-// Force dynamic rendering to avoid build-time database access
-export const dynamic = 'force-dynamic'; 
+// Static Take Out menu data - prices are take-out prices (ending in .95)
+const takeOutMenu = [
+  {
+    id: "veg-appetizers",
+    name: "Veg. Appetizers",
+    items: [
+      { id: "samosa", name: "Samosa", description: "Crispy turnover with potatoes & green peas", price: 8.95, image: "/images/menu/samosa.jpg" },
+      { id: "sweet-sour-gobi", name: "Sweet & Sour Gobi", description: "Cauliflower cooked in sweet & sour sauce.", price: 8.95, image: null },
+      { id: "onion-bhajjias", name: "Onion Bhajjias", description: "Savory deep fried onion fritters made with Bengal gram flours.", price: 9.95, image: null },
+      { id: "assorted-pakora", name: "Assorted Pakora", description: "Vegetable medley chickpea batter fried and served with sweet and sour chutney.", price: 9.95, image: null },
+      { id: "tandoori-mix-veg", name: "Tandoori Mix Veg.", description: "Florets of mixed veggies marinated with spices, ginger, garlic and grilled.", price: 10.95, image: null },
+      { id: "tandoori-mushroom", name: "Tandoori Mushroom", description: "Mushrooms marinated with roasted spices, hung yogurt and pickles", price: 10.95, image: null },
+      { id: "tandoori-paneer", name: "Tandoori Paneer", description: "Large chunks of Indian cottage cheese marinated in a spiced hung yogurt and grilled to perfection.", price: 12.95, image: null },
+    ]
+  },
+  {
+    id: "non-veg-appetizers",
+    name: "Non-Veg. Appetizers",
+    items: [
+      { id: "chicken-65", name: "Chicken 65", description: "Stir-fried chicken sautéed with bell pepper, onion, ginger and garlic.", price: 11.95, image: null },
+      { id: "malai-chicken-kabab", name: "Malai Chicken Kabab", description: "Marinated in yogurt, saffron, spices & herbs.", price: 11.95, image: null },
+      { id: "achari-chicken", name: "Achari Chicken", description: "Tandoori grilled with pickling spices.", price: 11.95, image: null },
+      { id: "seek-kabab", name: "Seek Kabab", description: "Ground lamb seasoned with onions & spices", price: 12.95, image: null },
+      { id: "chili-shrimp", name: "Chili Shrimp", description: "Indo-Chinese tossed with bell peppers, onions, chilis, garlic and ginger.", price: 13.95, image: null },
+    ]
+  },
+  {
+    id: "soups",
+    name: "Soup",
+    items: [
+      { id: "lentil-soup", name: "Lentil Soup", description: "Lentil broth with turmeric and spices", price: 6.95, image: null },
+      { id: "chicken-soup", name: "Chicken Soup", description: "Broth simmered with diced chicken and spices", price: 7.95, image: null },
+    ]
+  },
+  {
+    id: "salad",
+    name: "Salad",
+    items: [
+      { id: "om-green-salad", name: "Om Green Salad", description: "Lettuce, bell pepper, carrot, cucumber, tomatoes with chef's dressing.", price: 7.95, image: null },
+    ]
+  },
+  {
+    id: "chicken-main-course",
+    name: "Chicken Main Course",
+    items: [
+      { id: "chicken-tikka-masala", name: "Chicken Tikka Masala", description: "Grilled marinated chicken in a creamy tomato fenugreek sauce.", price: 18.95, image: "/images/menu/chicken-tikka-masala.jpg" },
+      { id: "butter-chicken", name: "Butter Chicken", description: "Marinated chicken cooked in a rich tomato and butter sauce", price: 18.95, image: "/images/menu/butter-chicken.jpg" },
+      { id: "chicken-korma", name: "Chicken Korma", description: "Roasted cashew nut, raisin, golden fried onion, saffron milk, cream and mild spices.", price: 18.95, image: null },
+      { id: "chicken-chettinad", name: "Chicken Chettinad", description: "Fresh ground pepper, temper with mustard seeds and curry leaves, with coconut milk.", price: 18.95, image: null },
+      { id: "chicken-vindaloo", name: "Chicken Vindaloo", description: "Cooked with freshly ground spices, toddy vinegar, whole dry chili sauce.", price: 17.95, image: null },
+      { id: "chicken-saag", name: "Chicken Saag", description: "Chicken sauteed in spinach with a hint of spices.", price: 17.95, image: null },
+      { id: "chicken-curry", name: "Chicken Curry", description: "Traditional Indian style chicken curry, very savory with aromatic spices.", price: 17.95, image: null },
+      { id: "chicken-kadhai", name: "Chicken Kadhai", description: "Chunks of chicken braised in a masala of coarse ground spices with sauteed onions, bell peppers.", price: 17.95, image: null },
+      { id: "madras-chicken-curry", name: "Madras Chicken Curry", description: "White poppy seeds, sliced onions, toasted grated coconut, and large dried red chili", price: 17.95, image: null },
+    ]
+  },
+  {
+    id: "lamb-main-course",
+    name: "Lamb Main Course",
+    items: [
+      { id: "lamb-tikka-masala", name: "Lamb Tikka Masala", description: "Grilled marinated lamb in a creamy tomato fenugreek sauce.", price: 20.95, image: null },
+      { id: "lamb-korma", name: "Lamb Korma", description: "Roasted cashew nut, raisin, golden fried onion, saffron coconut milk and spices.", price: 20.95, image: null },
+      { id: "lamb-rogan-josh", name: "Lamb Rogan Josh", description: "Slow cooked lamb with intense spices in an onion and tomato curry sauce", price: 20.95, image: "/images/menu/lamb-rogan-josh.jpg" },
+      { id: "lamb-vindaloo", name: "Lamb Vindaloo", description: "Tender lamb in a spicy curry made from vinegar, chilies and garlic.", price: 20.95, image: null },
+      { id: "lamb-bhuna", name: "Lamb Bhuna", description: "Lamb intensely sauteed with onion & spices and cooked in its own juices.", price: 20.95, image: null },
+      { id: "lamb-chettinad", name: "Lamb Chettinad", description: "Cooked with crushed black pepper, curry leaves, mustard seeds finished with coconut milk.", price: 20.95, image: null },
+      { id: "lamb-kadai", name: "Lamb Kadai", description: "Lamb and assorted fresh vegetables with bell peppers and special sauce", price: 20.95, image: null },
+      { id: "lamb-saag", name: "Lamb Saag", description: "Cubes of lamb sautéed with fresh spinach and spices", price: 20.95, image: null },
+      { id: "lamb-jalfrez", name: "Lamb Jalfrez", description: "Tender chunks of lamb cooked in a spicy tomato gravy with chunky onions, peppers and tomatoes.", price: 20.95, image: null },
+      { id: "lamb-dhansaak", name: "Lamb Dhansaak", description: "Dhansaak is a flavorful and aromatic curry, Fenugreek, lentil.", price: 21.95, image: null },
+    ]
+  },
+  {
+    id: "goat-main-course",
+    name: "Goat Main Course",
+    items: [
+      { id: "goat-curry", name: "Goat Curry", description: "Traditional Indian style goat curry, very savory with aromatic spices", price: 23.95, image: null },
+      { id: "goat-vindaloo", name: "Goat Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 23.95, image: null },
+      { id: "goat-bhuna", name: "Goat Bhuna", description: "Goat intensely sauteed with onion & spices and cooked in its own juices", price: 23.95, image: null },
+    ]
+  },
+  {
+    id: "veg-main-course",
+    name: "Veg. Main Course",
+    items: [
+      { id: "om-daal", name: "OM Daal", description: "Mix black lentils cooked with butter and in a fresh tomato sauce", price: 17.95, image: null },
+      { id: "delhi-masala-daal", name: "Delhi Masala Daal", description: "Yellow lentils cooked slowly with herbs and spices", price: 17.95, image: null },
+      { id: "paneer-tikka-masala", name: "Paneer Tikka Masala", description: "Indian cottage cheese cooked in creamy tomato and onion sauce", price: 17.95, image: null },
+      { id: "malai-kofta", name: "Malai Kofta", description: "Vegetable balls in tomato cream sauce", price: 17.95, image: null },
+      { id: "aloo-gobi-matar", name: "Aloo Gobi Matar", description: "Potato, cauliflower & green peas cooked with cumin, ginger, and spices.", price: 17.95, image: null },
+      { id: "achari-bainghan", name: "Achari Bainghan", description: "Baby eggplant cooked with pickling spices.", price: 17.95, image: null },
+      { id: "saag-paneer", name: "Saag Paneer", description: "Cottage cheese cooked with spinach, herbs & spices", price: 17.95, image: "/images/menu/palak-paneer.jpg" },
+      { id: "veg-curry", name: "Veg. Curry", description: "Mixed vegetables cooked in home-style cooking", price: 17.95, image: null },
+      { id: "chana-saag", name: "Chana Saag", description: "Chickpeas cooked with spinach, herbs and spices", price: 17.95, image: null },
+      { id: "chana-masala", name: "Chana Masala", description: "Chickpeas with onion & tomato (gravy-based curry)", price: 17.95, image: null },
+      { id: "bhindi-masala", name: "Bhindi Masala", description: "Fresh cut okra with cumin, onion, tomato masala", price: 17.95, image: null },
+      { id: "vegetable-korma", name: "Vegetable Korma", description: "Fresh vegetables cooked mildly spiced Almond cream sauce", price: 17.95, image: null },
+    ]
+  },
+  {
+    id: "seafood-main-course",
+    name: "Sea Food Main Course",
+    items: [
+      { id: "shrimp-tikka-masala", name: "Shrimp Tikka Masala", description: "Grilled marinated shrimp in a creamy tomato fenugreek sauce.", price: 23.95, image: null },
+      { id: "shrimp-curry", name: "Shrimp Curry", description: "Shrimp cooked in traditional Indian style curry.", price: 23.95, image: null },
+      { id: "goan-shrimp-curry", name: "Goan Shrimp Curry", description: "Shrimp cooked with fresh coconut milk with onions, lime juice, & spices.", price: 23.95, image: null },
+      { id: "shrimp-korma", name: "Shrimp Korma", description: "Roasted cashew nut, raisin, golden fried onion, mix fruits, saffron and spices.", price: 23.95, image: null },
+      { id: "shrimp-saag", name: "Shrimp Saag", description: "Onions, tomatoes with fresh sautéed spinach with ginger & garlic.", price: 23.95, image: null },
+      { id: "goan-salmon-curry", name: "Goan Salmon Curry", description: "Salmon fillet cooked with fresh coconut milk with cumin, curry leaves, lime juice & spices.", price: 23.95, image: null },
+      { id: "fish-masala", name: "Fish Masala", description: "Pan seared salmon cooked with an onion, fenugreek leaves & tomato spiced sauce.", price: 24.95, image: null },
+      { id: "shrimp-salmon-vindaloo", name: "Shrimp/Salmon Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 24.95, image: null },
+    ]
+  },
+  {
+    id: "tandoori-grill",
+    name: "Tandoori Grill Main Course",
+    items: [
+      { id: "tandoori-chicken", name: "Tandoori Chicken", description: "Bone-in half chicken marinated in hung yogurt and classic tandoori spices.", price: 20.95, image: "/images/menu/tandoori-chicken.jpg" },
+      { id: "tandoori-chicken-tikka", name: "Tandoori Chicken Tikka", description: "Chicken marinated with fresh basil, yogurt, roasted garlic paste, spices, & olive oil.", price: 20.95, image: null },
+      { id: "malai-kabab", name: "Malai Kabab", description: "Chicken marinated with cheddar cheese, saffron, white pepper, hung yogurt.", price: 21.95, image: null },
+      { id: "lamb-boti-kebab", name: "Lamb Boti Kebab", description: "Tender chunks of lamb marinated in hung yogurt, garlic, ginger, mint", price: 22.95, image: null },
+      { id: "lamb-seekh-kebab", name: "Lamb Seekh Kebab", description: "Oven cooked grounded lamb seasoned with cumin, ginger, & mint.", price: 23.95, image: null },
+      { id: "lamb-chops", name: "Lamb Chops", description: "Marinated with a special house sauce.", price: 31.95, image: null },
+      { id: "salmon-tikka", name: "Salmon Tikka", description: "Atlantic salmon fillets marinated in hung yogurt and herbs", price: 25.95, image: null },
+      { id: "tandoori-shrimp", name: "Tandoori Shrimp", description: "Jumbo shrimp marinated in a spiced hung yogurt mixture.", price: 25.95, image: null },
+      { id: "om-mixed-grill", name: "OM Mixed Grill", description: "Assortment of Chicken, Lamb and Seafood.", price: 28.95, image: null },
+    ]
+  },
+  {
+    id: "bread",
+    name: "Bread",
+    items: [
+      { id: "plain-naan", name: "Plain Naan", description: "Leavened flatbread cooked in a clay oven.", price: 3.95, image: "/images/menu/naan.jpg" },
+      { id: "garlic-naan", name: "Garlic Naan", description: "Garlic stuffed bread", price: 4.95, image: null },
+      { id: "onion-naan", name: "Onion Naan", description: "Leavened flatbread stuffed with spiced diced onions.", price: 4.95, image: null },
+      { id: "om-bread-sweet", name: "Om Bread (Sweet)", description: "Sweet stuffed bread", price: 5.95, image: null },
+      { id: "special-3-cheese-naan", name: "Special 3 Cheese Naan", description: "Three cheese stuffed naan", price: 6.95, image: null },
+      { id: "paneer-naan", name: "Paneer Naan", description: "Cheese stuffed bread", price: 5.95, image: null },
+      { id: "chicken-tikka-naan", name: "Chicken Tikka Naan", description: "Chicken tikka stuffed bread", price: 5.95, image: null },
+    ]
+  },
+  {
+    id: "whole-wheat-bread",
+    name: "Whole Wheat Bread",
+    items: [
+      { id: "plain-roti", name: "Plain Roti", description: "Whole wheat flatbread", price: 4.95, image: null },
+      { id: "laccha-paratha", name: "Laccha Paratha", description: "Tandoor-baked whole wheat multi layered flaky bread", price: 5.95, image: null },
+      { id: "mint-paratha", name: "Mint Paratha", description: "Whole wheat bread with mint", price: 5.95, image: null },
+      { id: "aloo-paratha", name: "Aloo Paratha", description: "Tandoor-baked whole wheat bread with a stuffing of mildly spiced potatoes and onions.", price: 5.95, image: null },
+      { id: "special-chili-garlic-naan", name: "Special Chili Garlic Naan", description: "Chili and garlic stuffed naan", price: 6.95, image: null },
+    ]
+  },
+  {
+    id: "rice",
+    name: "Rice",
+    items: [
+      { id: "matar-pulao", name: "Matar Pulao", description: "With cumin and green peas.", price: 7.95, image: null },
+      { id: "om-sweet-pulao", name: "Om Sweet Pulao", description: "Saffron rice cooked with fruits and nuts.", price: 7.95, image: null },
+      { id: "lemon-rice", name: "Lemon Rice", description: "Cooked with lemon juice, mustard seeds, fried peanuts, and curry leaves.", price: 7.95, image: null },
+    ]
+  },
+  {
+    id: "biryani",
+    name: "Biryani",
+    items: [
+      { id: "veg-biryani", name: "Veg. Biryani", description: "Fresh vegetables cooked with basmati rice, herbs, and spices.", price: 18.95, image: "/images/menu/biryani.jpg" },
+      { id: "chicken-biryani-hyderabadi", name: "Chicken Biryani Hyderabadi", description: "Basmati rice with Chicken cooked with spices in the style of Hyderabadi Nawabs", price: 20.95, image: null },
+      { id: "lamb-biryani", name: "Lamb Biryani", description: "Basmati Rice with Lamb cooked with herbs and spices.", price: 22.95, image: null },
+      { id: "shrimp-biryani", name: "Shrimp Biryani", description: "Basmati Rice with Shrimps cooked with herbs and spices.", price: 23.95, image: null },
+      { id: "goat-biryani", name: "Goat Biryani", description: "Basmati Rice with Goat meat cooked with herbs and spices.", price: 23.95, image: null },
+    ]
+  },
+  {
+    id: "side-orders",
+    name: "Side Order",
+    items: [
+      { id: "onion-relish", name: "Onion Relish", description: "Chopped onions marinated with a blend of tomato purée, vinegar", price: 2.95, image: null },
+      { id: "papadum", name: "Papadum", description: "Crispy Indian dried lentil crackers.", price: 3.95, image: null },
+      { id: "mango-chutney", name: "Mango Chutney", description: "A blend of ripe mangoes, sugar, and select spices", price: 4.95, image: null },
+      { id: "raita", name: "Raita", description: "Yogurt with carrots & Cucumbers and spices", price: 4.95, image: null },
+      { id: "jeera-aloo", name: "Jeera Aloo", description: "Cumin Flavored Potatoes.", price: 9.95, image: null },
+      { id: "om-daal-side", name: "Om Daal / Delhi Masala Daal", description: "Mix black lentils with butter or yellow lentils cooked slowly with herbs & spices", price: 9.95, image: null },
+    ]
+  },
+  {
+    id: "dessert",
+    name: "Dessert",
+    items: [
+      { id: "om-kheer", name: "OM Kheer", description: "Almond and apple flavored rice pudding in cardamom", price: 5.95, image: null },
+      { id: "gulab-jamun", name: "Gulab Jamun", description: "Soft dumplings of milk, flour simmered in simple syrup, rose water, cardamom", price: 6.95, image: null },
+      { id: "ras-malai", name: "Ras Malai", description: "Steamed cottage cheese dumplings with saffron milk", price: 6.95, image: null },
+      { id: "pistachio-kulfi", name: "Pistachio Kulfi", description: "Traditional Indian ice cream with pistachio", price: 6.95, image: null },
+      { id: "mango-kulfi", name: "Mango Kulfi", description: "Traditional Indian ice cream with mango", price: 6.95, image: null },
+    ]
+  },
+  {
+    id: "beverages",
+    name: "Beverage",
+    items: [
+      { id: "mango-lassi", name: "Mango Lassi", description: "Sweet yogurt drink blended with mango", price: 5.95, image: null },
+      { id: "sweet-lassi", name: "Sweet Lassi", description: "Sweet yogurt drink", price: 4.95, image: null },
+      { id: "salted-lassi", name: "Salted Lassi", description: "Traditional salted yogurt drink", price: 4.95, image: null },
+      { id: "masala-chai", name: "Masala Chai", description: "Spiced Indian tea", price: 3.95, image: null },
+      { id: "soft-drinks", name: "Soft Drinks", description: "Coke, Diet Coke, Sprite, Ginger Ale", price: 2.95, image: null },
+    ]
+  },
+];
 
-// Lunch menu data (served 12:00 PM - 2:45 PM)
+// Lunch menu data (served 12:00 PM - 2:45 PM) - Dine-in only
 const lunchMenu = {
   pricing: { veg: "$17.95", lamb: "$18.95" },
   hours: "12:00 PM - 2:45 PM",
@@ -79,7 +283,7 @@ const lunchMenu = {
   },
 };
 
-// Bar menu data
+// Bar menu data - Dine-in only
 const barMenu = [
   {
     category: "Special House Cocktails",
@@ -398,36 +602,7 @@ const cateringMenu = [
   },
 ];
 
-export default async function MenuPage() {
-  let dinnerCategories: { id: string; name: string; items: { id: string; name: string; description: string | null; price: number; image: string | null }[] }[] = [];
-  
-  try {
-    const categories = await prisma.category.findMany({
-      include: {
-        items: true,
-      },
-      orderBy: {
-        sortOrder: 'asc',
-      },
-    });
-
-    // Convert Decimal to number for client component
-    dinnerCategories = categories.map(cat => ({
-      id: cat.id,
-      name: cat.name,
-      items: cat.items.map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        price: Number(item.price),
-        image: item.imageUrl,
-      }))
-    }));
-  } catch (error) {
-    console.error('Database error:', error);
-    // Fallback: empty categories, lunch/bar/catering menus still work from static data
-  }
-
+export default function MenuPage() {
   return (
     <div className="bg-stone-50 min-h-screen">
       {/* Hero */}
@@ -451,7 +626,7 @@ export default async function MenuPage() {
           </div>
 
           <MenuDisplay 
-            dinnerCategories={dinnerCategories}
+            dinnerCategories={takeOutMenu}
             lunchMenu={lunchMenu}
             barMenu={barMenu}
             cateringMenu={cateringMenu}
