@@ -1302,7 +1302,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
               ))}
 
               <p className="text-center text-gray-500 text-sm italic">
-                Catering orders require 24-48 hours advance notice
+                Catering orders require 24 hours advance notice
               </p>
             </div>
           )}
