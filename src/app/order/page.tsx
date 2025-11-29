@@ -1,6 +1,7 @@
 import OrderInterface from '@/components/OrderInterface';
 import { Metadata } from 'next';
 import Image from 'next/image';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Order Online - OM Indian Restaurant',
@@ -502,13 +503,19 @@ export default function OrderPage() {
         </div>
       </div>
       
-      <OrderInterface 
-        dinnerCategories={takeOutMenu}
-        lunchMenu={lunchMenu}
-        barMenu={barMenu}
-        cateringMenu={cateringMenu}
-        omSpecialMenu={omSpecialMenu}
-      />
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
+        </div>
+      }>
+        <OrderInterface 
+          dinnerCategories={takeOutMenu}
+          lunchMenu={lunchMenu}
+          barMenu={barMenu}
+          cateringMenu={cateringMenu}
+          omSpecialMenu={omSpecialMenu}
+        />
+      </Suspense>
     </div>
   );
 }
