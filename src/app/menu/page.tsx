@@ -208,7 +208,7 @@ const takeOutMenu = [
       { id: "paneer-naan", name: "Paneer Naan", description: "Cheese stuffed bread", price: 5.95, image: null },
       { id: "special-3-cheese-naan", name: "Special 3 Cheese Naan", description: "Three cheese stuffed naan", price: 6.95, image: null },
       { id: "special-chili-garlic-naan", name: "Special Chili Garlic Naan", description: "Chili and garlic stuffed naan", price: 6.95, image: null },
-      { id: "bread-basket", name: "Bread Basket", description: "Includes Plain Naan, Garlic Naan, Onion Naan, and Plain Roti", price: 13.95, image: null },
+      { id: "bread-basket", name: "Bread Basket", description: "Plain Naan, Garlic Naan, Onion Naan, and Plain Roti", price: 13.95, image: null },
     ]
   },
   {
