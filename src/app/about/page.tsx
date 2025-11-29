@@ -48,7 +48,7 @@ export default function AboutPage() {
                 src="/assets/OMIndianRestaurant_ChickenTikkaMasala.jpg" 
                 alt="Chicken Tikka Masala"
                 fill
-                className="object-cover hover:scale-110 transition-transform duration-300"
+                className="object-cover hover:scale-110 transition-transform duration-200"
               />
             </div>
             <div className="relative h-64 rounded-xl overflow-hidden">
@@ -56,7 +56,7 @@ export default function AboutPage() {
                 src="/assets/OMIndianRestaurant_LambRojhanjosh.jpg" 
                 alt="Lamb Rogan Josh"
                 fill
-                className="object-cover hover:scale-110 transition-transform duration-300"
+                className="object-cover hover:scale-110 transition-transform duration-200"
               />
             </div>
             <div className="relative h-64 rounded-xl overflow-hidden">
@@ -64,7 +64,7 @@ export default function AboutPage() {
                 src="/assets/OMIndianRestaurant_TandoonPaneer.jpg" 
                 alt="Tandoori Paneer"
                 fill
-                className="object-cover hover:scale-110 transition-transform duration-300"
+                className="object-cover hover:scale-110 transition-transform duration-200"
               />
             </div>
             <div className="relative h-64 rounded-xl overflow-hidden">
@@ -72,7 +72,7 @@ export default function AboutPage() {
                 src="/assets/OMIndianRestaurant_GarlicNaan.jpg" 
                 alt="Garlic Naan"
                 fill
-                className="object-cover hover:scale-110 transition-transform duration-300"
+                className="object-cover hover:scale-110 transition-transform duration-200"
               />
             </div>
             <div className="relative h-64 rounded-xl overflow-hidden">
@@ -80,7 +80,7 @@ export default function AboutPage() {
                 src="/assets/OMIndianRestaurant_GulabJamun.jpg" 
                 alt="Gulab Jamun"
                 fill
-                className="object-cover hover:scale-110 transition-transform duration-300"
+                className="object-cover hover:scale-110 transition-transform duration-200"
               />
             </div>
             <div className="relative h-64 rounded-xl overflow-hidden">
@@ -88,7 +88,7 @@ export default function AboutPage() {
                 src="/assets/OMIndianRestaurant_SalmonTikka.jpg" 
                 alt="Salmon Tikka"
                 fill
-                className="object-cover hover:scale-110 transition-transform duration-300"
+                className="object-cover hover:scale-110 transition-transform duration-200"
               />
             </div>
           </div>

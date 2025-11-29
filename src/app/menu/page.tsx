@@ -69,7 +69,7 @@ const takeOutMenu = [
     id: "veg-appetizers",
     name: "Veg. Appetizers",
     items: [
-      { id: "samosa", name: "Samosa", description: "Crispy turnover with potatoes & green peas", price: 8.95, image: "/images/menu/samosa.jpg" },
+      { id: "samosa", name: "Samosa", description: "Crispy turnover with potatoes & green peas", price: 8.95, image: null },
       { id: "sweet-sour-gobi", name: "Sweet & Sour Gobi", description: "Cauliflower cooked in sweet & sour sauce.", price: 8.95, image: null },
       { id: "onion-bhajjias", name: "Onion Bhajjias", description: "Savory deep fried onion fritters made with Bengal gram flours.", price: 9.95, image: null },
       { id: "assorted-pakora", name: "Assorted Pakora", description: "Vegetable medley chickpea batter fried and served with sweet and sour chutney.", price: 9.95, image: null },
@@ -77,7 +77,7 @@ const takeOutMenu = [
       { id: "papri-chaat", name: "Papri Chaat", description: "Whole wheat crisps tossed with yogurt, mint and tamarind sauces", price: 9.95, image: null },
       { id: "tandoori-mix-veg", name: "Tandoori Mix Veg.", description: "Florets of mixed veggies marinated with spices, ginger, garlic and grilled.", price: 10.95, image: null },
       { id: "tandoori-mushroom", name: "Tandoori Mushroom", description: "Mushrooms marinated with roasted spices, hung yogurt and pickles", price: 10.95, image: null },
-      { id: "tandoori-paneer", name: "Tandoori Paneer", description: "Large chunks of Indian cottage cheese marinated in a spiced hung yogurt and grilled to perfection.", price: 11.95, image: null },
+      { id: "tandoori-paneer", name: "Tandoori Paneer", description: "Large chunks of Indian cottage cheese marinated in a spiced hung yogurt and grilled to perfection.", price: 11.95, image: "/assets/OMIndianRestaurant_TandoonPaneer.jpg" },
     ]
   },
   {
@@ -86,7 +86,7 @@ const takeOutMenu = [
     items: [
       { id: "malai-chicken-kabab", name: "Malai Chicken Kabab", description: "Marinated in yogurt, saffron, spices & herbs.", price: 11.95, image: null },
       { id: "achari-chicken", name: "Achari Chicken", description: "Tandoori grilled with pickling spices.", price: 11.95, image: null },
-      { id: "seek-kabab", name: "Seek Kabab", description: "Ground lamb seasoned with onions & spices", price: 12.95, image: null },
+      { id: "seek-kabab", name: "Seek Kabab", description: "Ground lamb seasoned with onions & spices", price: 12.95, image: "/assets/OMIndianRestaurant_SeekhKebab.jpg" },
     ]
   },
   {
@@ -108,10 +108,10 @@ const takeOutMenu = [
     id: "chicken-main-course",
     name: "Chicken Main Course",
     items: [
-      { id: "chicken-tikka-masala", name: "Chicken Tikka Masala", description: "Grilled marinated chicken in a creamy tomato fenugreek sauce.", price: 18.95, image: "/images/menu/chicken-tikka-masala.jpg" },
-      { id: "butter-chicken", name: "Butter Chicken", description: "Marinated chicken cooked in a rich tomato and butter sauce", price: 18.95, image: "/images/menu/butter-chicken.jpg" },
+      { id: "chicken-tikka-masala", name: "Chicken Tikka Masala", description: "Grilled marinated chicken in a creamy tomato fenugreek sauce.", price: 18.95, image: "/assets/OMIndianRestaurant_ChickenTikkaMasala.jpg" },
+      { id: "butter-chicken", name: "Butter Chicken", description: "Marinated chicken cooked in a rich tomato and butter sauce", price: 18.95, image: "/assets/OMIndianRestaurant_ChickenTikkaMasala.jpg" },
       { id: "chicken-korma", name: "Chicken Korma", description: "Roasted cashew nut, raisin, golden fried onion, saffron milk, cream and mild spices.", price: 18.95, image: null },
-      { id: "chicken-chettinad", name: "Chicken Chettinad", description: "Fresh ground pepper, temper with mustard seeds and curry leaves, with coconut milk.", price: 18.95, image: null },
+      { id: "chicken-chettinad", name: "Chicken Chettinad", description: "Fresh ground pepper, temper with mustard seeds and curry leaves, with coconut milk.", price: 18.95, image: "/assets/OMIndianRestaurant_ChickenChettinad.jpg" },
       { id: "chicken-vindaloo", name: "Chicken Vindaloo", description: "Cooked with freshly ground spices, toddy vinegar, whole dry chili sauce.", price: 17.95, image: null },
       { id: "chicken-saag", name: "Chicken Saag", description: "Chicken sauteed in spinach with a hint of spices.", price: 17.95, image: null },
       { id: "chicken-curry", name: "Chicken Curry", description: "Traditional Indian style chicken curry, very savory with aromatic spices.", price: 17.95, image: null },
@@ -125,7 +125,7 @@ const takeOutMenu = [
     items: [
       { id: "lamb-tikka-masala", name: "Lamb Tikka Masala", description: "Grilled marinated lamb in a creamy tomato fenugreek sauce.", price: 20.95, image: null },
       { id: "lamb-korma", name: "Lamb Korma", description: "Roasted cashew nut, raisin, golden fried onion, saffron coconut milk and spices.", price: 20.95, image: null },
-      { id: "lamb-rogan-josh", name: "Lamb Rogan Josh", description: "Slow cooked lamb with intense spices in an onion and tomato curry sauce", price: 20.95, image: "/images/menu/lamb-rogan-josh.jpg" },
+      { id: "lamb-rogan-josh", name: "Lamb Rogan Josh", description: "Slow cooked lamb with intense spices in an onion and tomato curry sauce", price: 20.95, image: "/assets/OMIndianRestaurant_LambRojhanjosh.jpg" },
       { id: "lamb-vindaloo", name: "Lamb Vindaloo", description: "Tender lamb in a spicy curry made from vinegar, chilies and garlic.", price: 20.95, image: null },
       { id: "lamb-bhuna", name: "Lamb Bhuna", description: "Lamb intensely sauteed with onion & spices and cooked in its own juices.", price: 20.95, image: null },
       { id: "lamb-chettinad", name: "Lamb Chettinad", description: "Cooked with crushed black pepper, curry leaves, mustard seeds finished with coconut milk.", price: 20.95, image: null },
@@ -139,7 +139,7 @@ const takeOutMenu = [
     id: "goat-main-course",
     name: "Goat Main Course",
     items: [
-      { id: "goat-curry", name: "Goat Curry", description: "Traditional Indian style goat curry, very savory with aromatic spices", price: 23.95, image: null },
+      { id: "goat-curry", name: "Goat Curry", description: "Traditional Indian style goat curry, very savory with aromatic spices", price: 23.95, image: "/assets/OMIndianRestaurant_GoatCurry.jpg" },
       { id: "goat-vindaloo", name: "Goat Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 23.95, image: null },
       { id: "goat-bhuna", name: "Goat Bhuna", description: "Goat intensely sauteed with onion & spices and cooked in its own juices", price: 23.95, image: null },
     ]

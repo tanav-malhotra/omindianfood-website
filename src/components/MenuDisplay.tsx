@@ -60,16 +60,27 @@ interface MenuDisplayProps {
   omSpecialMenu?: OmSpecialMenu;
 }
 
+// Catering item type for modal
+interface CateringItem {
+  name: string;
+  description: string;
+  halfTray?: string;
+  fullTray?: string;
+  perPiece?: string;
+}
+
 export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, lunchMenu, omSpecialMenu }: MenuDisplayProps) {
   const { addItem, items: cartItems } = useCart();
   const router = useRouter();
   const [menuType, setMenuType] = useState<MenuType>("takeout");
   const [activeSection, setActiveSection] = useState<string>("");
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [selectedCateringItem, setSelectedCateringItem] = useState<CateringItem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
   const [imageError, setImageError] = useState(false);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
+  const [selectedCateringOption, setSelectedCateringOption] = useState<'half' | 'full' | 'piece' | null>(null);
 
   // Check if cart has catering items
   const hasCateringItems = cartItems.some(item => item.isCatering);
@@ -108,6 +119,45 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
     setQuantity(1);
     setNote("");
     router.push("/order");
+  };
+
+  // Handle adding catering item to cart
+  const handleAddCateringToCart = () => {
+    if (!selectedCateringItem || !selectedCateringOption) return;
+    
+    const hasTakeoutItems = cartItems.some(item => !item.isCatering);
+    if (hasTakeoutItems) {
+      alert("Catering items cannot be mixed with take out items. Please place separate orders.");
+      return;
+    }
+
+    let price = 0;
+    let itemName = selectedCateringItem.name;
+    
+    if (selectedCateringOption === 'half' && selectedCateringItem.halfTray) {
+      price = parseFloat(selectedCateringItem.halfTray.replace('$', ''));
+      itemName = `${selectedCateringItem.name} (Half Tray)`;
+    } else if (selectedCateringOption === 'full' && selectedCateringItem.fullTray) {
+      price = parseFloat(selectedCateringItem.fullTray.replace('$', ''));
+      itemName = `${selectedCateringItem.name} (Full Tray)`;
+    } else if (selectedCateringOption === 'piece' && selectedCateringItem.perPiece) {
+      price = parseFloat(selectedCateringItem.perPiece.replace(/[^0-9.]/g, ''));
+    }
+
+    addItem({
+      menuItemId: `catering-${selectedCateringItem.name}-${selectedCateringOption}-${Date.now()}`,
+      name: itemName,
+      price: price,
+      quantity,
+      note: note || '',
+      isCatering: true
+    });
+
+    setSelectedCateringItem(null);
+    setSelectedCateringOption(null);
+    setQuantity(1);
+    setNote("");
+    router.push("/order?menu=catering");
   };
 
   // Reset image error when item changes
@@ -333,7 +383,7 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
             <>
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
                 <p className="text-amber-800">
-                  <strong>Note:</strong> Catering orders require 24-48 hours advance notice. 
+                  <strong>Note:</strong> Catering orders require 24 hours advance notice. 
                   Minimum order of $75 for delivery.
                 </p>
               </div>
@@ -346,25 +396,36 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
                     </div>
                     <div className="p-4 space-y-4">
                       {category.items.map((item, itemIdx) => (
-                        <div key={itemIdx} className="p-4 rounded-xl border border-gray-200">
-                          <div className="flex flex-col sm:flex-row justify-between gap-2">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                              <p className="text-sm text-gray-500 mt-1">{item.description}</p>
-                            </div>
-                            <div className="flex flex-wrap gap-2 text-sm">
-                              {item.perPiece && (
-                                <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">{item.perPiece}</span>
-                              )}
-                              {item.halfTray && (
-                                <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">Half: {item.halfTray}</span>
-                              )}
-                              {item.fullTray && (
-                                <span className="bg-[#C41E3A] px-3 py-1 rounded-full text-white">Full: {item.fullTray}</span>
-                              )}
-                            </div>
+                        <button
+                          key={itemIdx}
+                          onClick={() => {
+                            setSelectedCateringItem(item);
+                            setSelectedCateringOption(null);
+                            setQuantity(1);
+                            setNote("");
+                          }}
+                          className="w-full text-left bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors cursor-pointer"
+                        >
+                          <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                          <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {item.halfTray && (
+                              <span className="bg-white border-2 border-[#C41E3A] text-[#C41E3A] px-4 py-2 rounded-lg font-medium text-sm">
+                                Half Tray • {item.halfTray}
+                              </span>
+                            )}
+                            {item.fullTray && (
+                              <span className="bg-[#C41E3A] text-white px-4 py-2 rounded-lg font-medium text-sm">
+                                Full Tray • {item.fullTray}
+                              </span>
+                            )}
+                            {item.perPiece && (
+                              <span className="bg-[#C41E3A] text-white px-4 py-2 rounded-lg font-medium text-sm">
+                                {item.perPiece}
+                              </span>
+                            )}
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -387,107 +448,275 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
       {/* Item Modal */}
       {selectedItem && (
         <div 
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setSelectedItem(null)}
         >
           <div 
-            className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Image or gradient header */}
+            {/* Image Header */}
             {selectedItem.image && !imageError ? (
               <div className="relative h-48">
                 <Image
                   src={selectedItem.image}
                   alt={selectedItem.name}
                   fill
-                  className="object-cover rounded-t-2xl"
+                  className="object-cover"
                   onError={() => setImageError(true)}
                 />
-              </div>
-            ) : (
-              <div className="bg-gradient-to-br from-[#C41E3A] to-[#8B0000] p-6 text-white rounded-t-2xl">
-                <h2 className="text-2xl font-bold">{selectedItem.name}</h2>
-                <p className="text-white/80 text-lg mt-1">${selectedItem.price.toFixed(2)}</p>
-              </div>
-            )}
-
-            <div className="p-6">
-              {selectedItem.image && !imageError && (
-                <>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedItem.name}</h2>
-                  <p className="text-[#C41E3A] text-lg font-semibold mt-1">${selectedItem.price.toFixed(2)}</p>
-                </>
-              )}
-              
-              {selectedItem.description && (
-                <p className="text-gray-600 mt-2">{selectedItem.description}</p>
-              )}
-
-              {/* Quantity */}
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold hover:bg-gray-300 cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={quantity === 0 ? '' : quantity}
-                    onChange={(e) => {
-                      const rawValue = e.target.value.replace(/\D/g, '');
-                      const val = parseInt(rawValue, 10);
-                      if (rawValue === '') {
-                        setQuantity(0);
-                      } else if (!isNaN(val)) {
-                        setQuantity(val);
-                      }
-                    }}
-                    onBlur={(e) => {
-                      if (e.target.value === '' || quantity === 0) {
-                        setQuantity(1);
-                      }
-                    }}
-                    className="w-16 h-10 text-center text-xl font-bold border-2 border-gray-200 rounded-xl focus:border-[#C41E3A] focus:ring-0 outline-none"
-                    placeholder="1"
-                  />
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold hover:bg-gray-300 cursor-pointer"
-                  >
-                    +
-                  </button>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <button 
+                  onClick={() => setSelectedItem(null)} 
+                  className="absolute top-4 right-4 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition-colors cursor-pointer"
+                >
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <div className="absolute bottom-4 left-6 right-6 text-white">
+                  <h3 className="text-xl font-bold">{selectedItem.name}</h3>
+                  <p className="text-[#C41E3A] font-bold text-lg mt-1">${selectedItem.price.toFixed(2)}</p>
                 </div>
               </div>
-
-              {/* Special Instructions */}
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="e.g. Extra spicy, no onions, allergies..."
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white text-gray-900 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent text-sm resize-none"
-                  rows={3}
-                />
+            ) : (
+              <div className="relative bg-gradient-to-br from-[#1A1A1A] to-[#2A2A2A] p-6 text-white">
+                <button 
+                  onClick={() => setSelectedItem(null)} 
+                  className="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <h3 className="text-xl font-bold pr-8">{selectedItem.name}</h3>
+                <p className="text-[#C41E3A] font-bold text-lg mt-1">${selectedItem.price.toFixed(2)}</p>
               </div>
+            )}
+            
+            <div className="p-6">
+              {selectedItem.description && (
+                <p className="text-gray-600 text-sm mb-6">{selectedItem.description}</p>
+              )}
+              
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setQuantity(Math.max(0, quantity - 1))}
+                      className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+                    >−</button>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={quantity === 0 ? '' : quantity.toString()}
+                      onFocus={(e) => {
+                        if (quantity === 0) e.target.value = '';
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value === '' || parseInt(e.target.value, 10) === 0) {
+                          setQuantity(0);
+                        }
+                      }}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, '');
+                        if (rawValue === '') {
+                          setQuantity(0);
+                        } else {
+                          setQuantity(parseInt(rawValue, 10));
+                        }
+                      }}
+                      placeholder="0"
+                      className="w-20 h-12 text-2xl font-bold text-center bg-white border-2 border-gray-200 rounded-xl focus:border-[#C41E3A] focus:ring-0 outline-none"
+                    />
+                    <button 
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+                    >+</button>
+                  </div>
+                </div>
 
-              {/* Add to Cart Button */}
-              <button
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Special Instructions</label>
+                  <textarea 
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent text-sm resize-none"
+                    rows={3}
+                    placeholder="e.g. Extra spicy, no onions, allergies..."
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 pt-0">
+              <button 
                 onClick={handleAddToCart}
                 disabled={quantity === 0}
-                className={`w-full mt-6 py-4 rounded-xl font-bold text-lg shadow-lg ${
+                className={`w-full py-4 rounded-xl font-bold text-lg transition-colors shadow-lg ${
                   quantity === 0
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-[#C41E3A] text-white hover:bg-[#a01830] transition-colors cursor-pointer'
+                    : 'bg-[#C41E3A] text-white hover:bg-[#a01830] cursor-pointer'
                 }`}
               >
                 Add to Order • ${(selectedItem.price * quantity).toFixed(2)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Catering Item Modal */}
+      {selectedCateringItem && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setSelectedCateringItem(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="relative bg-gradient-to-br from-[#1A1A1A] to-[#2A2A2A] p-6 text-white">
+              <button 
+                onClick={() => setSelectedCateringItem(null)} 
+                className="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <h3 className="text-xl font-bold pr-8">{selectedCateringItem.name}</h3>
+              <p className="text-white/70 text-sm mt-1">Catering Item</p>
+            </div>
+            
+            <div className="p-6">
+              {selectedCateringItem.description && (
+                <p className="text-gray-600 text-sm mb-6">{selectedCateringItem.description}</p>
+              )}
+              
+              <div className="space-y-5">
+                {/* Size Selection */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Select Size</label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCateringItem.halfTray && (
+                      <button
+                        onClick={() => setSelectedCateringOption('half')}
+                        className={`px-4 py-3 rounded-xl font-medium text-sm transition-colors cursor-pointer ${
+                          selectedCateringOption === 'half'
+                            ? 'bg-[#C41E3A] text-white'
+                            : 'bg-white border-2 border-[#C41E3A] text-[#C41E3A] hover:bg-[#C41E3A] hover:text-white'
+                        }`}
+                      >
+                        Half Tray • {selectedCateringItem.halfTray}
+                      </button>
+                    )}
+                    {selectedCateringItem.fullTray && (
+                      <button
+                        onClick={() => setSelectedCateringOption('full')}
+                        className={`px-4 py-3 rounded-xl font-medium text-sm transition-colors cursor-pointer ${
+                          selectedCateringOption === 'full'
+                            ? 'bg-[#C41E3A] text-white'
+                            : 'bg-white border-2 border-[#C41E3A] text-[#C41E3A] hover:bg-[#C41E3A] hover:text-white'
+                        }`}
+                      >
+                        Full Tray • {selectedCateringItem.fullTray}
+                      </button>
+                    )}
+                    {selectedCateringItem.perPiece && (
+                      <button
+                        onClick={() => setSelectedCateringOption('piece')}
+                        className={`px-4 py-3 rounded-xl font-medium text-sm transition-colors cursor-pointer ${
+                          selectedCateringOption === 'piece'
+                            ? 'bg-[#C41E3A] text-white'
+                            : 'bg-white border-2 border-[#C41E3A] text-[#C41E3A] hover:bg-[#C41E3A] hover:text-white'
+                        }`}
+                      >
+                        {selectedCateringItem.perPiece}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quantity */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setQuantity(Math.max(0, quantity - 1))}
+                      className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+                    >−</button>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={quantity === 0 ? '' : quantity.toString()}
+                      onFocus={(e) => {
+                        if (quantity === 0) e.target.value = '';
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value === '' || parseInt(e.target.value, 10) === 0) {
+                          setQuantity(0);
+                        }
+                      }}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, '');
+                        if (rawValue === '') {
+                          setQuantity(0);
+                        } else {
+                          setQuantity(parseInt(rawValue, 10));
+                        }
+                      }}
+                      placeholder="0"
+                      className="w-20 h-12 text-2xl font-bold text-center bg-white border-2 border-gray-200 rounded-xl focus:border-[#C41E3A] focus:ring-0 outline-none"
+                    />
+                    <button 
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+                    >+</button>
+                  </div>
+                </div>
+
+                {/* Special Instructions */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Special Instructions</label>
+                  <textarea 
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent text-sm resize-none"
+                    rows={3}
+                    placeholder="e.g. Extra spicy, no onions, allergies..."
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 pt-0">
+              <button 
+                onClick={handleAddCateringToCart}
+                disabled={quantity === 0 || !selectedCateringOption}
+                className={`w-full py-4 rounded-xl font-bold text-lg transition-colors shadow-lg ${
+                  quantity === 0 || !selectedCateringOption
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#C41E3A] text-white hover:bg-[#a01830] cursor-pointer'
+                }`}
+              >
+                {!selectedCateringOption 
+                  ? 'Select a size' 
+                  : `Add to Order • $${(
+                      (selectedCateringOption === 'half' && selectedCateringItem.halfTray 
+                        ? parseFloat(selectedCateringItem.halfTray.replace('$', '')) 
+                        : selectedCateringOption === 'full' && selectedCateringItem.fullTray 
+                          ? parseFloat(selectedCateringItem.fullTray.replace('$', '')) 
+                          : selectedCateringOption === 'piece' && selectedCateringItem.perPiece 
+                            ? parseFloat(selectedCateringItem.perPiece.replace(/[^0-9.]/g, '')) 
+                            : 0
+                      ) * quantity
+                    ).toFixed(2)}`
+                }
               </button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
 type MenuItem = {
@@ -85,6 +85,7 @@ interface OrderInterfaceProps {
 
 export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, cateringMenu, omSpecialMenu }: OrderInterfaceProps) {
   const { items, addItem, removeItem, updateItem, total, clearCart } = useCart();
+  const searchParams = useSearchParams();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [imageError, setImageError] = useState(false);
   const [note, setNote] = useState('');
@@ -93,6 +94,14 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   const [menuType, setMenuType] = useState<MenuType>('takeout');
   const [activeCategory, setActiveCategory] = useState(dinnerCategories[0]?.id || '');
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  
+  // Check URL params for menu type (e.g., ?menu=catering)
+  useEffect(() => {
+    const menuParam = searchParams.get('menu');
+    if (menuParam === 'catering') {
+      setMenuType('catering');
+    }
+  }, [searchParams]);
   
   // Note: Lunch Special is dine-in only and not available for online ordering
   

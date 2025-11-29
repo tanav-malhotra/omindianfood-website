@@ -124,17 +124,17 @@ export default function Home() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Dish 1 */}
-            <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+            <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-200">
               <div className="relative h-72 overflow-hidden">
                 <Image 
                   src="/assets/OMIndianRestaurant_ChickenTikkaMasala.jpg" 
                   alt="Chicken Tikka Masala"
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="object-cover group-hover:scale-110 transition-transform duration-200"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <p className="text-2xl font-bold">$20</p>
+                  <p className="text-2xl font-bold">$18.95</p>
                 </div>
               </div>
               <div className="p-6">
@@ -144,17 +144,17 @@ export default function Home() {
             </div>
 
             {/* Dish 2 */}
-            <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+            <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-200">
               <div className="relative h-72 overflow-hidden">
                 <Image 
                   src="/assets/OMIndianRestaurant_LambChops.jpg" 
                   alt="Lamb Chops"
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="object-cover group-hover:scale-110 transition-transform duration-200"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <p className="text-2xl font-bold">$32</p>
+                  <p className="text-2xl font-bold">$31.95</p>
                 </div>
               </div>
               <div className="p-6">
@@ -164,17 +164,17 @@ export default function Home() {
             </div>
 
             {/* Dish 3 */}
-            <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+            <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-200">
               <div className="relative h-72 overflow-hidden">
                 <Image 
                   src="/assets/OMIndianRestaurant_JumboPrawn.jpg" 
                   alt="Tandoori Shrimp"
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="object-cover group-hover:scale-110 transition-transform duration-200"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <p className="text-2xl font-bold">$26</p>
+                  <p className="text-2xl font-bold">$25.95</p>
                 </div>
               </div>
               <div className="p-6">
