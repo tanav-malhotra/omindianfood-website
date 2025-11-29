@@ -237,9 +237,12 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
       {/* Desktop Sidebar + Content Layout */}
       <div className="flex gap-6">
         {/* Desktop Sidebar */}
-        <div className="hidden md:block w-48 flex-shrink-0">
-          <div className="sticky top-24 bg-white rounded-xl shadow-lg p-3 max-h-[70vh] overflow-y-auto">
-            <h3 className="font-bold text-gray-900 mb-2 px-2">Categories</h3>
+        <div className="hidden md:block w-56 flex-shrink-0">
+          <div className="sticky top-24 bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-[#1A1A1A] px-4 py-3">
+              <h3 className="text-white font-semibold">Categories</h3>
+            </div>
+            <div className="p-2">
             {getCurrentCategories().map((cat) => (
               <button
                 key={cat.id}
@@ -256,6 +259,7 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
                 {cat.name}
               </button>
             ))}
+            </div>
           </div>
         </div>
 

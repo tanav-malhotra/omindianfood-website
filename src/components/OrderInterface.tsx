@@ -906,7 +906,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
             <div className="bg-[#1A1A1A] px-4 py-3">
               <h3 className="text-white font-semibold">Categories</h3>
             </div>
-            <div className="p-2 max-h-[60vh] overflow-y-auto">
+            <div className="p-2">
               {getCurrentCategories().map((cat) => (
                 <button
                   key={cat.id}
