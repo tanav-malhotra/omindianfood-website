@@ -147,19 +147,19 @@ export default function Home() {
             <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-200">
               <div className="relative h-72 overflow-hidden">
                 <Image 
-                  src="/assets/OMIndianRestaurant_LambChops.jpg" 
-                  alt="Lamb Chops"
+                  src="/assets/OMIndianRestaurant_LambRojhanjosh.jpg" 
+                  alt="Lamb Rogan Josh"
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-200"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <p className="text-2xl font-bold">$31.95</p>
+                  <p className="text-2xl font-bold">$20.95</p>
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Lamb Chops</h3>
-                <p className="text-gray-600 text-sm">Marinated with a special house sauce and grilled to perfection.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Lamb Rogan Josh</h3>
+                <p className="text-gray-600 text-sm">Slow cooked lamb with intense spices in an onion and tomato curry sauce.</p>
               </div>
             </div>
 
