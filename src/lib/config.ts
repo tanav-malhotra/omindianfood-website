@@ -10,7 +10,7 @@ export const siteConfig = {
     full: "1531 York Avenue, New York, NY 10028"
   },
   phone: "(212) 628-4500",
-  email: "info@omindianfood.com",
+  email: "omrestaurantnyc@gmail.com",
   hours: {
     days: "Open 7 Days",
     lunch: "12PM - 2:45PM",
