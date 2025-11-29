@@ -85,10 +85,10 @@ const takeOutMenu = [
     name: "Non-Veg. Appetizers",
     items: [
       { id: "chicken-tikka-app", name: "Chicken Tikka", description: "Boneless chicken marinated in hung yogurt with tandoori spices and grilled.", price: 11.95, image: null },
-      { id: "boti-kabab", name: "Boti Kabab", description: "Tender chunks of lamb marinated in hung yogurt, garlic, ginger, mint.", price: 12.95, image: null },
-      { id: "seek-kabab", name: "Seek Kabab", description: "Ground lamb seasoned with onions & spices", price: 12.95, image: "/assets/OMIndianRestaurant_SeekhKebab.jpg" },
+      { id: "malai-chicken-app", name: "Malai Chicken", description: "Chicken marinated in white peppercorn, yogurt.", price: 11.95, image: "/assets/OMIndianRestaurant_ChickenMalaKebab.jpg" },
+      { id: "achari-chicken-tikka-app", name: "Achari Chicken Tikka", description: "Tandoori grilled with pickling spices.", price: 11.95, image: null },
+      { id: "lamb-seekh-kabab-app", name: "Lamb Seek Kabab", description: "Ground lamb seasoned in green chili paste, spices, mint, cilantro, ginger.", price: 12.95, image: "/assets/OMIndianRestaurant_SeekhKebab.jpg" },
       { id: "lamb-boti-kabab-app", name: "Lamb Boti Kabab", description: "Tender chunks of lamb marinated in hung yogurt, garlic, ginger, mint.", price: 12.95, image: null },
-      { id: "lamb-seekh-kabab-app", name: "Lamb Seekh Kabab", description: "Oven cooked grounded lamb seasoned with cumin, ginger, & mint.", price: 12.95, image: null },
     ]
   },
   {
