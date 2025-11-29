@@ -89,6 +89,8 @@ const takeOutMenu = [
       { id: "chicken-tikka-app", name: "Chicken Tikka", description: "Boneless chicken marinated in hung yogurt with tandoori spices and grilled.", price: 11.95, image: null },
       { id: "boti-kabab", name: "Boti Kabab", description: "Tender chunks of lamb marinated in hung yogurt, garlic, ginger, mint.", price: 12.95, image: null },
       { id: "seek-kabab", name: "Seek Kabab", description: "Ground lamb seasoned with onions & spices", price: 12.95, image: "/assets/OMIndianRestaurant_SeekhKebab.jpg" },
+      { id: "lamb-boti-kabab-app", name: "Lamb Boti Kabab", description: "Tender chunks of lamb marinated in hung yogurt, garlic, ginger, mint.", price: 12.95, image: null },
+      { id: "lamb-seekh-kabab-app", name: "Lamb Seekh Kabab", description: "Oven cooked grounded lamb seasoned with cumin, ginger, & mint.", price: 12.95, image: null },
     ]
   },
   {
@@ -110,6 +112,7 @@ const takeOutMenu = [
     id: "chicken-main-course",
     name: "Chicken Main Course",
     items: [
+      { id: "chicken-tikka-masala", name: "Chicken Tikka Masala", description: "Grilled marinated chicken in a creamy tomato fenugreek sauce.", price: 18.95, image: "/assets/OMIndianRestaurant_ChickenTikkaMasala.jpg" },
       { id: "butter-chicken", name: "Butter Chicken", description: "Marinated chicken cooked in a rich tomato and butter sauce", price: 18.95, image: "/assets/OMIndianRestaurant_ChickenTikkaMasala.jpg" },
       { id: "chicken-chettinad", name: "Chicken Chettinad", description: "Fresh ground pepper, temper with mustard seeds and curry leaves, with coconut milk.", price: 18.95, image: "/assets/OMIndianRestaurant_ChickenChettinad.jpg" },
       { id: "chicken-curry", name: "Chicken Curry", description: "Traditional Indian style chicken curry, very savory with aromatic spices.", price: 18.95, image: null },
@@ -117,7 +120,6 @@ const takeOutMenu = [
       { id: "chicken-korma", name: "Chicken Korma", description: "Roasted cashew nut, raisin, golden fried onion, saffron milk, cream and mild spices.", price: 18.95, image: null },
       { id: "chicken-saag", name: "Chicken Saag", description: "Chicken sauteed in spinach with a hint of spices.", price: 18.95, image: null },
       { id: "chicken-tikka-curry", name: "Chicken Tikka Curry", description: "Grilled chicken tikka pieces in a rich curry sauce.", price: 18.95, image: null },
-      { id: "chicken-tikka-masala", name: "Chicken Tikka Masala", description: "Grilled marinated chicken in a creamy tomato fenugreek sauce.", price: 18.95, image: "/assets/OMIndianRestaurant_ChickenTikkaMasala.jpg" },
       { id: "chicken-vindaloo", name: "Chicken Vindaloo", description: "Cooked with freshly ground spices, toddy vinegar, whole dry chili sauce.", price: 18.95, image: null },
       { id: "mango-chicken", name: "Mango Chicken", description: "Chicken cooked in a sweet and savory mango sauce with aromatic spices.", price: 18.95, image: null },
     ]
@@ -152,6 +154,9 @@ const takeOutMenu = [
     id: "veg-main-course",
     name: "Veg. Main Course",
     items: [
+      { id: "om-daal", name: "OM Daal", description: "Mix black lentils cooked with butter and in a fresh tomato sauce", price: 17.95, image: null },
+      { id: "om-bhurji", name: "OM Bhurji", description: "Scrambled paneer with onions, tomatoes, and spices", price: 17.95, image: null },
+      { id: "paneer-tikka-masala", name: "Paneer Tikka Masala", description: "Indian cottage cheese cooked in creamy tomato and onion sauce", price: 17.95, image: "/assets/OMIndianRestaurant_PaneertikkaMasala.jpg" },
       { id: "achari-bainghan", name: "Achari Bainghan", description: "Baby eggplant cooked with pickling spices.", price: 17.95, image: null },
       { id: "aloo-gobi-matar", name: "Aloo Gobi Matar", description: "Potato, cauliflower & green peas cooked with cumin, ginger, and spices.", price: 17.95, image: null },
       { id: "bhindi-masala", name: "Bhindi Masala", description: "Fresh cut okra with cumin, onion, tomato masala", price: 17.95, image: null },
@@ -159,9 +164,6 @@ const takeOutMenu = [
       { id: "chana-saag", name: "Chana Saag", description: "Chickpeas cooked with spinach, herbs and spices", price: 17.95, image: null },
       { id: "delhi-masala-daal", name: "Delhi Masala Daal", description: "Yellow lentils cooked slowly with herbs and spices", price: 17.95, image: null },
       { id: "malai-kofta", name: "Malai Kofta", description: "Vegetable balls in tomato cream sauce", price: 17.95, image: null },
-      { id: "om-bhurji", name: "OM Bhurji", description: "Scrambled paneer with onions, tomatoes, and spices", price: 17.95, image: null },
-      { id: "om-daal", name: "OM Daal", description: "Mix black lentils cooked with butter and in a fresh tomato sauce", price: 17.95, image: null },
-      { id: "paneer-tikka-masala", name: "Paneer Tikka Masala", description: "Indian cottage cheese cooked in creamy tomato and onion sauce", price: 17.95, image: "/assets/OMIndianRestaurant_PaneertikkaMasala.jpg" },
       { id: "saag-paneer", name: "Saag Paneer", description: "Cottage cheese cooked with spinach, herbs & spices", price: 17.95, image: "/assets/OMIndianRestaurant_RailwayPalak.jpg" },
       { id: "veg-curry", name: "Veg. Curry", description: "Mixed vegetables cooked in home-style cooking", price: 17.95, image: null },
       { id: "vegetable-korma", name: "Vegetable Korma", description: "Fresh vegetables cooked mildly spiced Almond cream sauce", price: 17.95, image: null },
@@ -185,6 +187,7 @@ const takeOutMenu = [
     id: "tandoori-grill",
     name: "Tandoori Grill Main Course",
     items: [
+      { id: "om-mixed-grill", name: "OM Mixed Grill", description: "Assortment of Chicken, Lamb and Seafood.", price: 30.95, image: null },
       { id: "achari-chicken-grill", name: "Achari Chicken", description: "Tandoori grilled chicken with pickling spices.", price: 20.95, image: null },
       { id: "malai-kabab", name: "Malai Kabab", description: "Chicken marinated with cheddar cheese, saffron, white pepper, hung yogurt.", price: 20.95, image: null },
       { id: "tandoori-chicken", name: "Tandoori Chicken", description: "Bone-in half chicken marinated in hung yogurt and classic tandoori spices.", price: 20.95, image: "/assets/OMIndianRestaurant_TandoonChicken.jpg" },
@@ -193,7 +196,6 @@ const takeOutMenu = [
       { id: "lamb-seekh-kebab", name: "Lamb Seekh Kebab", description: "Oven cooked grounded lamb seasoned with cumin, ginger, & mint.", price: 22.95, image: null },
       { id: "salmon-tikka", name: "Salmon Tikka", description: "Atlantic salmon fillets marinated in hung yogurt and herbs", price: 25.95, image: "/assets/OMIndianRestaurant_SalmonTikka.jpg" },
       { id: "tandoori-shrimp", name: "Tandoori Shrimp", description: "Jumbo shrimp marinated in a spiced hung yogurt mixture.", price: 25.95, image: "/assets/OMIndianRestaurant_JumboPrawn.jpg" },
-      { id: "om-mixed-grill", name: "OM Mixed Grill", description: "Assortment of Chicken, Lamb and Seafood.", price: 30.95, image: null },
     ]
   },
   {
@@ -226,9 +228,9 @@ const takeOutMenu = [
     name: "Rice",
     items: [
       { id: "plain-basmati-rice", name: "Plain Basmati Rice", description: "Steamed aromatic basmati rice.", price: 3.95, image: null },
+      { id: "om-sweet-pulao", name: "OM Sweet Pulao", description: "Saffron rice cooked with fruits and nuts.", price: 7.95, image: null },
       { id: "lemon-rice", name: "Lemon Rice", description: "Cooked with lemon juice, mustard seeds, fried peanuts, and curry leaves.", price: 7.95, image: null },
       { id: "matar-pulao", name: "Matar Pulao", description: "With cumin and green peas.", price: 7.95, image: null },
-      { id: "om-sweet-pulao", name: "Om Sweet Pulao", description: "Saffron rice cooked with fruits and nuts.", price: 7.95, image: null },
     ]
   },
   {
@@ -272,7 +274,7 @@ const takeOutMenu = [
     id: "beverages",
     name: "Beverage",
     items: [
-      { id: "soft-drinks", name: "Soft Drinks", description: "Coke, Diet Coke, Sprite, Ginger Ale", price: 2.95, image: null },
+      { id: "soft-drinks", name: "Soft Drinks", description: "Coke, Diet Coke, Sprite, Ginger Ale", price: 2.95, image: null, options: ["Coke", "Diet Coke", "Sprite", "Ginger Ale"] },
       { id: "water", name: "Water", description: "Bottled water", price: 2.95, image: null },
       { id: "sparkling-water", name: "Sparkling Water", description: "Sparkling mineral water", price: 3.95, image: null },
       { id: "mango-lassi", name: "Mango Lassi", description: "Sweet yogurt drink blended with mango", price: 6.95, image: null },

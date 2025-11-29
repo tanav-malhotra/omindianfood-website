@@ -11,6 +11,7 @@ type MenuItem = {
   description: string | null;
   price: number;
   image: string | null;
+  options?: string[];
 };
 
 type Category = {
@@ -81,6 +82,7 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
   const [imageError, setImageError] = useState(false);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
   const [selectedCateringOption, setSelectedCateringOption] = useState<'half' | 'full' | 'piece' | null>(null);
+  const [selectedItemOption, setSelectedItemOption] = useState<string | null>(null);
 
   // Check if cart has catering items
   const hasCateringItems = cartItems.some(item => item.isCatering);
@@ -90,7 +92,8 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
     if (menuType === "takeout") {
       return [
         { id: "lunch-special", name: "Lunch Special (Dine-In)" },
-        ...dinnerCategories.map(c => ({ id: c.id, name: c.name }))
+        ...dinnerCategories.map(c => ({ id: c.id, name: c.name })),
+        { id: "bar-menu", name: "Bar Menu (Dine-In)" }
       ];
     } else {
       return cateringMenu.map((cat, idx) => ({ id: `catering-${idx}`, name: cat.name }));
@@ -106,18 +109,30 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
       return;
     }
 
+    // Build note with selected option if applicable
+    let finalNote = '';
+    if (selectedItem.options && selectedItemOption) {
+      finalNote = selectedItemOption;
+      if (note) {
+        finalNote += `. ${note}`;
+      }
+    } else {
+      finalNote = note || '';
+    }
+
     addItem({
       menuItemId: selectedItem.id,
       name: selectedItem.name,
       price: selectedItem.price,
       quantity,
-      note: note || '',
+      note: finalNote,
       isCatering: false
     });
 
     setSelectedItem(null);
     setQuantity(1);
     setNote("");
+    setSelectedItemOption(null);
     router.push("/order");
   };
 
@@ -361,7 +376,12 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
                       {category.items.map((item) => (
                         <button
                           key={item.id}
-                          onClick={() => setSelectedItem(item)}
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setSelectedItemOption(item.options ? item.options[0] : null);
+                            setQuantity(1);
+                            setNote("");
+                          }}
                           className="text-left p-4 rounded-xl border border-gray-200 hover:border-[#C41E3A] hover:shadow-md transition-all cursor-pointer"
                         >
                           <div className="flex justify-between items-start gap-2">
@@ -379,6 +399,48 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
                   </div>
                 </div>
               ))}
+
+              {/* Bar Menu - Dine In Only */}
+              <div id="section-bar-menu" className="scroll-mt-28">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                  <div className="bg-[#1A1A1A] px-6 py-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold text-white">Bar Menu</h2>
+                      <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">DINE-IN ONLY</span>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-center">
+                      <p className="text-amber-800 text-sm">
+                        <strong>Note:</strong> Alcoholic beverages are available for dine-in customers only and cannot be ordered online. Must be 21+ with valid ID.
+                      </p>
+                    </div>
+                    {barMenu.map((category, catIdx) => (
+                      <div key={catIdx} className="mb-6 last:mb-0">
+                        <h3 className="font-bold text-gray-900 text-lg mb-3 border-b pb-2">{category.category}</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {category.items.map((item, itemIdx) => (
+                            <div
+                              key={itemIdx}
+                              className="p-3 rounded-xl border border-gray-200 bg-gray-50"
+                            >
+                              <div className="flex justify-between items-start gap-2">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                                  {item.description && (
+                                    <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+                                  )}
+                                </div>
+                                <span className="text-[#C41E3A] font-bold whitespace-nowrap">{item.price}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </>
           )}
 
@@ -504,6 +566,28 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
               )}
               
               <div className="space-y-5">
+                {/* Options Selection (for items like Soft Drinks) */}
+                {selectedItem.options && selectedItem.options.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">Select Option</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {selectedItem.options.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => setSelectedItemOption(option)}
+                          className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                            selectedItemOption === option
+                              ? 'bg-[#C41E3A] text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
                   <div className="flex items-center gap-3">

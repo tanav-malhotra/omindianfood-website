@@ -10,6 +10,7 @@ type MenuItem = {
   description: string | null;
   price: number; // This is the take-out price
   image: string | null;
+  options?: string[];
 };
 
 // Database stores take-out prices directly (the .95 prices)
@@ -87,6 +88,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   const { items, addItem, removeItem, updateItem, total, clearCart } = useCart();
   const searchParams = useSearchParams();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [selectedItemOption, setSelectedItemOption] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
   const [note, setNote] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -248,6 +250,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
 
   const handleAddToOrderClick = (item: MenuItem) => {
     setSelectedItem(item);
+    setSelectedItemOption(item.options ? item.options[0] : null);
     setQuantity(1);
     setNote('');
   };
@@ -270,14 +273,26 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
       return;
     }
     
+    // Build note with selected option if applicable
+    let finalNote = '';
+    if (selectedItem.options && selectedItemOption) {
+      finalNote = selectedItemOption;
+      if (note) {
+        finalNote += `. ${note}`;
+      }
+    } else {
+      finalNote = note || '';
+    }
+    
     addItem({
       menuItemId: selectedItem.id,
       name: selectedItem.name,
       price: selectedItem.price,
       quantity,
-      note
+      note: finalNote
     });
     setSelectedItem(null);
+    setSelectedItemOption(null);
   };
 
   // Format card number with spaces
@@ -1603,6 +1618,28 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
               )}
               
               <div className="space-y-5">
+                {/* Options Selection (for items like Soft Drinks) */}
+                {selectedItem.options && selectedItem.options.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">Select Option</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {selectedItem.options.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => setSelectedItemOption(option)}
+                          className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                            selectedItemOption === option
+                              ? 'bg-[#C41E3A] text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
                   <div className="flex items-center gap-3">
