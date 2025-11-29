@@ -8,6 +8,7 @@ export type CartItem = {
   price: number;
   quantity: number;
   note: string;
+  isCatering?: boolean; // Flag to track if item is from catering menu
 };
 
 type CartContextType = {

@@ -73,7 +73,6 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
 
   // Check if cart has catering items
   const hasCateringItems = cartItems.some(item => item.isCatering);
-  const hasTakeoutItems = cartItems.some(item => !item.isCatering);
 
   // Get categories for current menu type
   const getCurrentCategories = () => {
