@@ -100,7 +100,7 @@ export default function MenuDisplay({ dinnerCategories, barMenu, cateringMenu, l
       name: selectedItem.name,
       price: selectedItem.price,
       quantity,
-      note: note || undefined,
+      note: note || '',
       isCatering: false
     });
 
