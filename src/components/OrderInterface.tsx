@@ -55,14 +55,35 @@ interface LunchMenu {
   };
 }
 
+interface OmSpecialItem {
+  name: string;
+  description?: string;
+}
+
+interface OmSpecialMenu {
+  appetizers: {
+    chicken: OmSpecialItem[];
+    lamb: OmSpecialItem[];
+    vegetable: OmSpecialItem[];
+  };
+  soups: OmSpecialItem[];
+  salad: OmSpecialItem[];
+  entrees: {
+    chicken: OmSpecialItem[];
+    lamb: OmSpecialItem[];
+    vegetable: OmSpecialItem[];
+  };
+}
+
 interface OrderInterfaceProps {
   dinnerCategories: Category[];
   lunchMenu: LunchMenu;
   barMenu: BarMenuItem[];
   cateringMenu: CateringCategory[];
+  omSpecialMenu?: OmSpecialMenu;
 }
 
-export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, cateringMenu }: OrderInterfaceProps) {
+export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, cateringMenu, omSpecialMenu }: OrderInterfaceProps) {
   const { items, addItem, removeItem, updateItem, total, clearCart } = useCart();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [imageError, setImageError] = useState(false);
@@ -78,7 +99,16 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   // OM Special Builder State (for Take Out menu)
   const [omSpecialAppetizer, setOmSpecialAppetizer] = useState<string | null>(null);
   const [omSpecialEntree, setOmSpecialEntree] = useState<string | null>(null);
+  const [omSpecialBreadUpgrade, setOmSpecialBreadUpgrade] = useState<string | null>(null);
   const [showOmSpecialBuilder, setShowOmSpecialBuilder] = useState(false);
+  
+  // Bread upgrade options for OM Special ($1 extra)
+  const breadUpgradeOptions = [
+    { name: "Plain Naan (included)", price: 0 },
+    { name: "Garlic Naan (+$1)", price: 1 },
+    { name: "Onion Naan (+$1)", price: 1 },
+    { name: "Plain Paratha (+$1)", price: 1 },
+  ];
   
   // Touch/swipe state for mobile cart drawer
   const touchStartY = useRef<number>(0);
@@ -894,36 +924,39 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
           {menuType === 'takeout' && (
             <div className="space-y-8">
               {/* OM Special Deal */}
-              <div className="bg-[#C41E3A] text-white p-6 rounded-2xl">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <div>
-                    <h2 className="text-2xl font-bold">OM SPECIAL</h2>
-                    <p className="text-white/90 text-xl font-semibold">$18.95</p>
-                    <p className="text-white/80 text-sm mt-1">
-                      One Appetizer + One Entrée • Includes basmati rice, naan bread, raita & mango chutney
-                    </p>
+              {omSpecialMenu && (
+                <div className="bg-[#C41E3A] text-white p-6 rounded-2xl">
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                      <h2 className="text-2xl font-bold">OM SPECIAL</h2>
+                      <p className="text-white/90 text-xl font-semibold">$18.95{omSpecialBreadUpgrade && breadUpgradeOptions.find(b => b.name === omSpecialBreadUpgrade)?.price ? ' + $1' : ''}</p>
+                      <p className="text-white/80 text-sm mt-1">
+                        One Appetizer + One Entrée • Includes basmati rice, naan bread, raita & mango chutney
+                      </p>
+                      <p className="text-white/70 text-xs mt-1">
+                        Add $1 for Garlic Naan, Onion Naan, or Plain Paratha
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowOmSpecialBuilder(!showOmSpecialBuilder)}
+                      className="bg-white text-[#C41E3A] px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      {showOmSpecialBuilder ? 'Hide Builder' : 'Build Your OM Special'}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setShowOmSpecialBuilder(!showOmSpecialBuilder)}
-                    className="bg-white text-[#C41E3A] px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap"
-                  >
-                    {showOmSpecialBuilder ? 'Hide Builder' : 'Build Your OM Special'}
-                  </button>
-                </div>
-                
-                {showOmSpecialBuilder && (
-                  <div className="mt-6 bg-white/10 rounded-xl p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Appetizer Selection */}
-                      <div>
-                        <h3 className="font-semibold text-lg mb-3">1. Choose Appetizer</h3>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {dinnerCategories
-                            .filter(c => c.name.toLowerCase().includes('appetizer'))
-                            .flatMap(c => c.items)
-                            .map((item, idx) => (
+                  
+                  {showOmSpecialBuilder && (
+                    <div className="mt-6 bg-white/10 rounded-xl p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Appetizer Selection */}
+                        <div>
+                          <h3 className="font-semibold text-lg mb-3">1. Choose Appetizer</h3>
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {/* Chicken Appetizers */}
+                            <p className="text-xs text-white/60 uppercase tracking-wide mt-2">Chicken</p>
+                            {omSpecialMenu.appetizers.chicken.map((item, idx) => (
                               <button
-                                key={idx}
+                                key={`chicken-app-${idx}`}
                                 onClick={() => setOmSpecialAppetizer(item.name)}
                                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
                                   omSpecialAppetizer === item.name 
@@ -931,25 +964,86 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                                     : 'bg-white/20 hover:bg-white/30'
                                 }`}
                               >
-                                {omSpecialAppetizer === item.name && (
-                                  <span className="mr-2">✓</span>
-                                )}
+                                {omSpecialAppetizer === item.name && <span className="mr-2">✓</span>}
                                 {item.name}
                               </button>
                             ))}
-                        </div>
-                      </div>
-                      
-                      {/* Entrée Selection */}
-                      <div>
-                        <h3 className="font-semibold text-lg mb-3">2. Choose Entrée</h3>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {dinnerCategories
-                            .filter(c => c.name.toLowerCase().includes('main course') || c.name.toLowerCase().includes('entree'))
-                            .flatMap(c => c.items)
-                            .map((item, idx) => (
+                            {/* Lamb Appetizers */}
+                            <p className="text-xs text-white/60 uppercase tracking-wide mt-2">Lamb</p>
+                            {omSpecialMenu.appetizers.lamb.map((item, idx) => (
                               <button
-                                key={idx}
+                                key={`lamb-app-${idx}`}
+                                onClick={() => setOmSpecialAppetizer(item.name)}
+                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                                  omSpecialAppetizer === item.name 
+                                    ? 'bg-white text-[#C41E3A] font-semibold' 
+                                    : 'bg-white/20 hover:bg-white/30'
+                                }`}
+                              >
+                                {omSpecialAppetizer === item.name && <span className="mr-2">✓</span>}
+                                {item.name}
+                              </button>
+                            ))}
+                            {/* Vegetable Appetizers */}
+                            <p className="text-xs text-white/60 uppercase tracking-wide mt-2">Vegetable</p>
+                            {omSpecialMenu.appetizers.vegetable.map((item, idx) => (
+                              <button
+                                key={`veg-app-${idx}`}
+                                onClick={() => setOmSpecialAppetizer(item.name)}
+                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                                  omSpecialAppetizer === item.name 
+                                    ? 'bg-white text-[#C41E3A] font-semibold' 
+                                    : 'bg-white/20 hover:bg-white/30'
+                                }`}
+                              >
+                                {omSpecialAppetizer === item.name && <span className="mr-2">✓</span>}
+                                {item.name}
+                              </button>
+                            ))}
+                            {/* Soup */}
+                            <p className="text-xs text-white/60 uppercase tracking-wide mt-2">Soup</p>
+                            {omSpecialMenu.soups.map((item, idx) => (
+                              <button
+                                key={`soup-${idx}`}
+                                onClick={() => setOmSpecialAppetizer(item.name)}
+                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                                  omSpecialAppetizer === item.name 
+                                    ? 'bg-white text-[#C41E3A] font-semibold' 
+                                    : 'bg-white/20 hover:bg-white/30'
+                                }`}
+                              >
+                                {omSpecialAppetizer === item.name && <span className="mr-2">✓</span>}
+                                {item.name}
+                              </button>
+                            ))}
+                            {/* Salad */}
+                            <p className="text-xs text-white/60 uppercase tracking-wide mt-2">Salad</p>
+                            {omSpecialMenu.salad.map((item, idx) => (
+                              <button
+                                key={`salad-${idx}`}
+                                onClick={() => setOmSpecialAppetizer(item.name)}
+                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                                  omSpecialAppetizer === item.name 
+                                    ? 'bg-white text-[#C41E3A] font-semibold' 
+                                    : 'bg-white/20 hover:bg-white/30'
+                                }`}
+                              >
+                                {omSpecialAppetizer === item.name && <span className="mr-2">✓</span>}
+                                {item.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Entrée Selection */}
+                        <div>
+                          <h3 className="font-semibold text-lg mb-3">2. Choose Entrée</h3>
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {/* Chicken Entrees */}
+                            <p className="text-xs text-white/60 uppercase tracking-wide mt-2">Chicken</p>
+                            {omSpecialMenu.entrees.chicken.map((item, idx) => (
+                              <button
+                                key={`chicken-ent-${idx}`}
                                 onClick={() => setOmSpecialEntree(item.name)}
                                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
                                   omSpecialEntree === item.name 
@@ -957,59 +1051,119 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                                     : 'bg-white/20 hover:bg-white/30'
                                 }`}
                               >
-                                {omSpecialEntree === item.name && (
-                                  <span className="mr-2">✓</span>
-                                )}
+                                {omSpecialEntree === item.name && <span className="mr-2">✓</span>}
                                 {item.name}
                               </button>
                             ))}
+                            {/* Lamb Entrees */}
+                            <p className="text-xs text-white/60 uppercase tracking-wide mt-2">Lamb</p>
+                            {omSpecialMenu.entrees.lamb.map((item, idx) => (
+                              <button
+                                key={`lamb-ent-${idx}`}
+                                onClick={() => setOmSpecialEntree(item.name)}
+                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                                  omSpecialEntree === item.name 
+                                    ? 'bg-white text-[#C41E3A] font-semibold' 
+                                    : 'bg-white/20 hover:bg-white/30'
+                                }`}
+                              >
+                                {omSpecialEntree === item.name && <span className="mr-2">✓</span>}
+                                {item.name}
+                              </button>
+                            ))}
+                            {/* Vegetable Entrees */}
+                            <p className="text-xs text-white/60 uppercase tracking-wide mt-2">Vegetable</p>
+                            {omSpecialMenu.entrees.vegetable.map((item, idx) => (
+                              <button
+                                key={`veg-ent-${idx}`}
+                                onClick={() => setOmSpecialEntree(item.name)}
+                                className={`w-full text-left px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                                  omSpecialEntree === item.name 
+                                    ? 'bg-white text-[#C41E3A] font-semibold' 
+                                    : 'bg-white/20 hover:bg-white/30'
+                                }`}
+                              >
+                                {omSpecialEntree === item.name && <span className="mr-2">✓</span>}
+                                {item.name}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Summary and Add to Cart */}
-                    <div className="mt-4 pt-4 border-t border-white/20 flex flex-col sm:flex-row justify-between items-center gap-4">
-                      <div className="text-sm">
-                        <span className={omSpecialAppetizer ? 'text-green-300' : 'text-white/60'}>
-                          {omSpecialAppetizer ? `✓ ${omSpecialAppetizer}` : '① Pick Appetizer'}
-                        </span>
-                        <span className="mx-2">+</span>
-                        <span className={omSpecialEntree ? 'text-green-300' : 'text-white/60'}>
-                          {omSpecialEntree ? `✓ ${omSpecialEntree}` : '② Pick Entrée'}
-                        </span>
+                      
+                      {/* Bread Upgrade Option */}
+                      <div className="mt-4 pt-4 border-t border-white/20">
+                        <h3 className="font-semibold text-lg mb-3">3. Choose Bread (Optional Upgrade)</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {breadUpgradeOptions.map((option, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setOmSpecialBreadUpgrade(option.name)}
+                              className={`px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                                omSpecialBreadUpgrade === option.name 
+                                  ? 'bg-white text-[#C41E3A] font-semibold' 
+                                  : 'bg-white/20 hover:bg-white/30'
+                              }`}
+                            >
+                              {omSpecialBreadUpgrade === option.name && <span className="mr-2">✓</span>}
+                              {option.name}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => {
-                          if (omSpecialAppetizer && omSpecialEntree) {
-                            if (hasCateringItems) {
-                              alert('Take out items cannot be mixed with catering items. Please place separate orders for catering and take out.');
-                              return;
+                      
+                      {/* Summary and Add to Cart */}
+                      <div className="mt-4 pt-4 border-t border-white/20 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="text-sm">
+                          <span className={omSpecialAppetizer ? 'text-green-300' : 'text-white/60'}>
+                            {omSpecialAppetizer ? `✓ ${omSpecialAppetizer}` : '① Pick Appetizer'}
+                          </span>
+                          <span className="mx-2">+</span>
+                          <span className={omSpecialEntree ? 'text-green-300' : 'text-white/60'}>
+                            {omSpecialEntree ? `✓ ${omSpecialEntree}` : '② Pick Entrée'}
+                          </span>
+                          {omSpecialBreadUpgrade && breadUpgradeOptions.find(b => b.name === omSpecialBreadUpgrade)?.price ? (
+                            <span className="ml-2 text-green-300">+ {omSpecialBreadUpgrade.split(' ')[0]} {omSpecialBreadUpgrade.split(' ')[1]}</span>
+                          ) : null}
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (omSpecialAppetizer && omSpecialEntree) {
+                              if (hasCateringItems) {
+                                alert('Take out items cannot be mixed with catering items. Please place separate orders for catering and take out.');
+                                return;
+                              }
+                              const breadUpgradePrice = breadUpgradeOptions.find(b => b.name === omSpecialBreadUpgrade)?.price || 0;
+                              const breadNote = omSpecialBreadUpgrade && breadUpgradePrice > 0 
+                                ? `, Bread: ${omSpecialBreadUpgrade.split(' (')[0]}` 
+                                : '';
+                              addItem({
+                                menuItemId: `om-special-${Date.now()}`,
+                                name: 'OM Special',
+                                price: 18.95 + breadUpgradePrice,
+                                quantity: 1,
+                                note: `Appetizer: ${omSpecialAppetizer}, Entrée: ${omSpecialEntree}${breadNote}. Includes basmati rice, naan bread, raita & mango chutney.`
+                              });
+                              setOmSpecialAppetizer(null);
+                              setOmSpecialEntree(null);
+                              setOmSpecialBreadUpgrade(null);
+                              setShowOmSpecialBuilder(false);
                             }
-                            addItem({
-                              menuItemId: `om-special-${Date.now()}`,
-                              name: 'OM Special',
-                              price: 18.95,
-                              quantity: 1,
-                              note: `Appetizer: ${omSpecialAppetizer}, Entrée: ${omSpecialEntree}. Includes basmati rice, naan bread, raita & mango chutney.`
-                            });
-                            setOmSpecialAppetizer(null);
-                            setOmSpecialEntree(null);
-                            setShowOmSpecialBuilder(false);
-                          }
-                        }}
-                        disabled={!omSpecialAppetizer || !omSpecialEntree}
-                        className={`px-6 py-3 rounded-lg font-bold transition-all cursor-pointer ${
-                          omSpecialAppetizer && omSpecialEntree
-                            ? 'bg-white text-[#C41E3A] hover:bg-gray-100'
-                            : 'bg-white/30 text-white/60 cursor-not-allowed'
-                        }`}
-                      >
-                        Add to Cart • $18.95
-                      </button>
+                          }}
+                          disabled={!omSpecialAppetizer || !omSpecialEntree}
+                          className={`px-6 py-3 rounded-lg font-bold transition-all cursor-pointer ${
+                            omSpecialAppetizer && omSpecialEntree
+                              ? 'bg-white text-[#C41E3A] hover:bg-gray-100'
+                              : 'bg-white/30 text-white/60 cursor-not-allowed'
+                          }`}
+                        >
+                          Add to Cart • ${(18.95 + (breadUpgradeOptions.find(b => b.name === omSpecialBreadUpgrade)?.price || 0)).toFixed(2)}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               {dinnerCategories.map(category => (
                 <div key={category.id} id={`cat-${category.id}`} className="scroll-mt-24">

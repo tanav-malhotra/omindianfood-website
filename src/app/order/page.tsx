@@ -7,6 +7,63 @@ export const metadata: Metadata = {
   description: 'Place your order online for pickup or delivery.',
 };
 
+// OM Special menu items (from the OM Special menu image)
+// These are the ONLY items available for the OM Special builder
+const omSpecialMenu = {
+  appetizers: {
+    chicken: [
+      { name: "Chicken Tikka", description: "Boneless chicken marinated in a hung yogurt with tandoori spices and tandoor grilled" },
+      { name: "Malai Kabab", description: "Chicken marinated with cheddar cheese, saffron, white pepper, hung yogurt" },
+    ],
+    lamb: [
+      { name: "Lamb Seek Kabab", description: "Tandoor grilled freshly ground lamb sausages seasoned with cumin, ginger and mint" },
+      { name: "Lamb Boti Kebab", description: "Marinated with fenugreek, ginger, yogurt, lemon juice" },
+    ],
+    vegetable: [
+      { name: "Samosa", description: "Turnovers filled with seasoned potatoes and green peas. Served with house chutneys" },
+      { name: "Assorted Pakora", description: "Vegetable medley chickpea batter fried and served sweet and sour chutney" },
+      { name: "Kachori Chaat", description: "Crispy refined flour puffs filled with lentils and mild spices" },
+      { name: "Papri Chaat", description: "Whole wheat crisps tossed with yogurt, mint and tamarind sauces" },
+      { name: "Onion Bhajjias", description: "Battered and fried onion fritters served with house chutneys" },
+      { name: "Gobi Sweet & Sour", description: "Crispy florets, tossed with garlic tomato sauce" },
+    ],
+  },
+  soups: [
+    { name: "Chicken Soup", description: "Broth simmered in diced chicken, spices" },
+    { name: "Lentil Soup", description: "Lentil broth, turmeric milafu spices and a hint of lime juice" },
+  ],
+  salad: [
+    { name: "Green Salad", description: "Iceburg lettuce, carrots, cucumber and tomato, served with balsamic dressing" },
+  ],
+  entrees: {
+    chicken: [
+      { name: "Chicken Curry", description: "Traditional Indian style chicken curry, very savory with aromatic spices" },
+      { name: "Chicken Tikka Masala", description: "Grilled marinated chicken in a creamy tomato fenugreek sauce" },
+      { name: "Chicken Korma", description: "Roasted cashew nut, raisin, golden fried onion, saffron milk, cream and mild spices" },
+      { name: "Chicken Palak", description: "Fresh spinach, fenugreek leaves, garlic, nutmeg, roasted spices" },
+      { name: "Chicken Vindaloo", description: "Freshly ground spices, toddy vinegar, whole dry chili sauce" },
+    ],
+    lamb: [
+      { name: "Lamb Palak (Spinach)", description: "Lamb cooked with spinach and a touch of cream" },
+      { name: "Lamb Rogan Josh", description: "Slow cooked lamb with intense spices in a onion and tomato curry sauce" },
+      { name: "Lamb Curry", description: "Lamb seasoned with curry leaves, ginger, garlic, onion tomato sauce" },
+      { name: "Lamb Vindaloo", description: "Lamb cooked hot and spicy vinegar and hot chili sauce" },
+    ],
+    vegetable: [
+      { name: "Om Daal", description: "Mix black lentils cooked with butter and in a fresh tomato sauce" },
+      { name: "Delhi Masala Daal", description: "Yellow lentils cooked slowly with herbs and spices" },
+      { name: "Vegetable Korma", description: "Fresh vegetable mix cooked in a mildly spiced almond cream sauce" },
+      { name: "Bhindi Masala", description: "Fresh diced okra, tossed in cumin, ginger, whole chili, onion tomato" },
+      { name: "Palak Paneer", description: "Freshly cooked spinach with Indian cheese" },
+      { name: "Chana Saag", description: "Chickpeas, fresh spinach, cooked with onion tomato and ginger garlic" },
+      { name: "Mushroom Palak", description: "Mushroom sorted with fresh spinach, ginger, garlic, cumin seeds" },
+      { name: "Malai Kofta", description: "Vegetable dumplings simmered in a creamy fenugreek, tomato sauce" },
+      { name: "Chana Masala", description: "White chickpeas in a spicy, tangy, onion and tomato gravy-based curry" },
+      { name: "Aloo Gobi Matar", description: "Diced potato, cauliflower florets, and green peas seasoned with cumin, ginger, and spices" },
+    ],
+  },
+};
+
 // Static Take Out menu data - prices are take-out prices (ending in .95)
 const takeOutMenu = [
   {
@@ -17,20 +74,20 @@ const takeOutMenu = [
       { id: "sweet-sour-gobi", name: "Sweet & Sour Gobi", description: "Cauliflower cooked in sweet & sour sauce.", price: 8.95, image: null },
       { id: "onion-bhajjias", name: "Onion Bhajjias", description: "Savory deep fried onion fritters made with Bengal gram flours.", price: 9.95, image: null },
       { id: "assorted-pakora", name: "Assorted Pakora", description: "Vegetable medley chickpea batter fried and served with sweet and sour chutney.", price: 9.95, image: null },
+      { id: "kachori-chaat", name: "Kachori Chaat", description: "Crispy refined flour puffs filled with lentils and mild spices", price: 9.95, image: null },
+      { id: "papri-chaat", name: "Papri Chaat", description: "Whole wheat crisps tossed with yogurt, mint and tamarind sauces", price: 9.95, image: null },
       { id: "tandoori-mix-veg", name: "Tandoori Mix Veg.", description: "Florets of mixed veggies marinated with spices, ginger, garlic and grilled.", price: 10.95, image: null },
       { id: "tandoori-mushroom", name: "Tandoori Mushroom", description: "Mushrooms marinated with roasted spices, hung yogurt and pickles", price: 10.95, image: null },
-      { id: "tandoori-paneer", name: "Tandoori Paneer", description: "Large chunks of Indian cottage cheese marinated in a spiced hung yogurt and grilled to perfection.", price: 12.95, image: null },
+      { id: "tandoori-paneer", name: "Tandoori Paneer", description: "Large chunks of Indian cottage cheese marinated in a spiced hung yogurt and grilled to perfection.", price: 11.95, image: null },
     ]
   },
   {
     id: "non-veg-appetizers",
     name: "Non-Veg. Appetizers",
     items: [
-      { id: "chicken-65", name: "Chicken 65", description: "Stir-fried chicken sautéed with bell pepper, onion, ginger and garlic.", price: 11.95, image: null },
       { id: "malai-chicken-kabab", name: "Malai Chicken Kabab", description: "Marinated in yogurt, saffron, spices & herbs.", price: 11.95, image: null },
       { id: "achari-chicken", name: "Achari Chicken", description: "Tandoori grilled with pickling spices.", price: 11.95, image: null },
       { id: "seek-kabab", name: "Seek Kabab", description: "Ground lamb seasoned with onions & spices", price: 12.95, image: null },
-      { id: "chili-shrimp", name: "Chili Shrimp", description: "Indo-Chinese tossed with bell peppers, onions, chilis, garlic and ginger.", price: 13.95, image: null },
     ]
   },
   {
@@ -206,10 +263,12 @@ const takeOutMenu = [
     id: "beverages",
     name: "Beverage",
     items: [
-      { id: "mango-lassi", name: "Mango Lassi", description: "Sweet yogurt drink blended with mango", price: 5.95, image: null },
+      { id: "mango-lassi", name: "Mango Lassi", description: "Sweet yogurt drink blended with mango", price: 6.95, image: null },
       { id: "sweet-lassi", name: "Sweet Lassi", description: "Sweet yogurt drink", price: 4.95, image: null },
       { id: "salted-lassi", name: "Salted Lassi", description: "Traditional salted yogurt drink", price: 4.95, image: null },
       { id: "masala-chai", name: "Masala Chai", description: "Spiced Indian tea", price: 3.95, image: null },
+      { id: "water", name: "Water", description: "Bottled water", price: 2.95, image: null },
+      { id: "sparkling-water", name: "Sparkling Water", description: "Sparkling mineral water", price: 3.95, image: null },
       { id: "soft-drinks", name: "Soft Drinks", description: "Coke, Diet Coke, Sprite, Ginger Ale", price: 2.95, image: null },
     ]
   },
@@ -297,52 +356,6 @@ const barMenu = [
       { name: "Coffee Negroni", description: "Coffee, Tequila, Campari, Sweet Vermouth", price: "$13" },
     ]
   },
-  {
-    category: "Classic Cocktails",
-    items: [
-      { name: "Moscow Mule", description: "Vodka, Ginger beer, splash of lime", price: "$13" },
-      { name: "Pina Colada", description: "Rum, Pineapple juice, Coconut milk", price: "$13" },
-      { name: "Strawberry Daiquiri", description: "Rum, Lime Juice, simple syrup", price: "$13" },
-      { name: "Vodka Daiquiri", description: "Vodka, Peach Blossom, Lime Juice", price: "$13" },
-      { name: "Aperol Spritz", description: "Prosecco, Aperol Spritz, Splash of Club Soda", price: "$13" },
-      { name: "Lychee Martini", description: "Vodka, lychee juice, lime juice", price: "$13" },
-    ]
-  },
-  {
-    category: "Wine by the Glass - Red",
-    items: [
-      { name: "Malbec Vista Flores, Catena", description: "Mendoza AR - Dark violet with floral notes of lavender, violet, and mocha", price: "$11" },
-      { name: "Cabernet Sauvignon, Ryder", description: "CA - Rich, smooth with hints of mocha, cherry and black berries", price: "$12" },
-      { name: "Rioja Crianza, Bujanda", description: "Rioja SP - Aromas of blackberry with spicy tones, mild tobacco", price: "$12" },
-      { name: "Valpolicella Classico Superiore, Zenato", description: "Veneto IT - Wild berries, blackcurrants, black cherries, hints of chocolate", price: "$12" },
-      { name: "Pinot Noir, Napa Valley", description: "Hand selected grapes, tradition and family heritage", price: "$12" },
-    ]
-  },
-  {
-    category: "Wine by the Glass - White",
-    items: [
-      { name: "Dr. L Riesling", description: "Mosel DE - Bright, refreshing, fruit-driven with crisp finish", price: "$11" },
-      { name: "Pinot Grigio, Zenato", description: "Delle Venezia IT - Soft texture with hint of cantaloupe", price: "$12" },
-      { name: "Villa Maria Sauvignon Blanc", description: "Marlborough NZ - Aromas of gooseberry and passionfruit", price: "$12" },
-      { name: "Chardonnay, Black's Station", description: "CA - Flavors of melon, mango, and toasty oak", price: "$12" },
-    ]
-  },
-  {
-    category: "Rosé & Bubbles",
-    items: [
-      { name: "Rosé, Mont Gravet", description: "Languedoc FR - Light pink with strawberries and raspberries", price: "$11" },
-      { name: "Zardetto Spumante", description: "Veneto IT - Notes of pears, apples, and peaches", price: "$11" },
-    ]
-  },
-  {
-    category: "Beer",
-    items: [
-      { name: "Taj Mahal (650ml)", price: "$12" },
-      { name: "Kingfisher", price: "$8" },
-      { name: "Stella", price: "$8" },
-      { name: "Non-Alcoholic Beer", price: "$8" },
-    ]
-  },
 ];
 
 // Catering menu data
@@ -350,34 +363,42 @@ const cateringMenu = [
   {
     name: "Appetizers",
     items: [
-      { name: "Samosas", description: "Crispy turnovers stuffed with spiced potatoes and green peas.", perPiece: "$2.75/piece" },
-      { name: "Onion Bhajia", description: "Onion fritters in chickpea flour, spices, and herbs.", halfTray: "$65.00", fullTray: "$115.00" },
+      { name: "Samosas", description: "Crispy turnovers stuffed with spiced potatoes and green peas. Served with tamarind and mint-cilantro chutneys.", perPiece: "$2.75/piece" },
+      { name: "Onion Bhajia", description: "Onion fritters in chickpea flour, spices, and herbs. Served with chutneys.", halfTray: "$65.00", fullTray: "$115.00" },
       { name: "Vegetable Pakora", description: "Mixed vegetable fritters in chickpea flour, spices, and herbs.", halfTray: "$65.00", fullTray: "$125.00" },
-      { name: "Sweet & Sour Gobi", description: "Crispy battered cauliflower tossed in tangy sweet and sour sauce.", halfTray: "$75.00", fullTray: "$145.00" },
-      { name: "Tandoori Mushroom", description: "Made with cream cheese, onion, peppers, cilantro chutney.", halfTray: "$65.00", fullTray: "$150.00" },
+      { name: "Sweet & Sour Gobi", description: "Crispy battered cauliflower tossed in tangy sweet and sour sauce with bell peppers and onions.", halfTray: "$75.00", fullTray: "$145.00" },
+      { name: "Tandoori Mushroom", description: "Made with cream cheese, onion, peppers, cilantro chutney, coated in yogurt marinade.", halfTray: "$65.00", fullTray: "$150.00" },
       { name: "Paneer Tikka", description: "Large chunks of Indian cottage cheese marinated in spiced yogurt and grilled.", halfTray: "$83.00", fullTray: "$160.00" },
+      { name: "Tandoori Vegetable", description: "Florets of mix veggies marinated with spices, ginger, garlic and grilled.", halfTray: "$85.00", fullTray: "$160.00" },
     ]
   },
   {
     name: "Tandoori Specials",
     items: [
-      { name: "Tandoori Chicken", description: "Chicken marinated in ginger, garlic paste, yogurt, Kashmiri red chiles.", halfTray: "$90.00", fullTray: "$170.00" },
+      { name: "Tandoori Chicken", description: "Chicken marinated in ginger, garlic paste, yogurt, Kashmiri red chiles. Served with basmati rice.", halfTray: "$90.00", fullTray: "$170.00" },
       { name: "Chicken Tikka", description: "Boneless chicken marinated in spiced yogurt, cooked on live charcoal.", halfTray: "$85.00", fullTray: "$155.00" },
+      { name: "Achari Chicken Tikka", description: "Boneless chicken chunks marinated in Achari masala, yogurt, and spices.", halfTray: "$85.00", fullTray: "$155.00" },
       { name: "Malai Kebab", description: "Minced chicken skewers with herbs & spices, grilled in clay oven.", halfTray: "$85.00", fullTray: "$155.00" },
       { name: "Lamb Seekh Kebab", description: "Minced lamb skewers with cilantro, onions, garlic, ginger, spices.", halfTray: "$95.00", fullTray: "$190.00" },
-      { name: "Salmon Tikka", description: "Marinated in ground spices, yogurt, and Kashmiri chilies.", halfTray: "$150.00", fullTray: "$290.00" },
+      { name: "Salmon Tikka", description: "Marinated in ground spices, yogurt, and Kashmiri chilies. Baked in clay oven.", halfTray: "$150.00", fullTray: "$290.00" },
+      { name: "Tandoori Shrimp", description: "Marinated in ginger, yogurt, and spices.", halfTray: "$155.00", fullTray: "$290.00" },
     ]
   },
   {
     name: "Vegetarian Entrees",
     items: [
-      { name: "Bhindi Masala", description: "Okra sauteed with onions, tomato, ginger, garlic.", halfTray: "$87.00", fullTray: "$169.00" },
+      { name: "Bhindi Masala", description: "Okra sauteed with onions, tomato, ginger, garlic, pomegranate seeds.", halfTray: "$87.00", fullTray: "$169.00" },
       { name: "Aloo Gobi Matar", description: "Potatoes, cauliflower, green peas in tomato cumin sauce.", halfTray: "$87.00", fullTray: "$169.00" },
       { name: "OM Daal", description: "Slow-cooked black lentils with tomatoes, ginger, garlic, spices.", halfTray: "$87.00", fullTray: "$169.00" },
+      { name: "Yellow Daal", description: "Yellow lentils with tomatoes, ginger, garlic, turmeric, cilantro.", halfTray: "$80.00", fullTray: "$160.00" },
+      { name: "Vegetable Curry", description: "Mixed vegetables cooked in home-style cooking.", halfTray: "$80.00", fullTray: "$160.00" },
+      { name: "Chana Saag", description: "Chana masala sauteed with pureed baby spinach, spices, and herbs.", halfTray: "$87.00", fullTray: "$169.00" },
       { name: "Chana Masala", description: "Chickpeas prepared with pomegranate seeds, dry mango powder, ginger.", halfTray: "$87.00", fullTray: "$169.00" },
       { name: "Vegetable Korma", description: "Nine-vegetable stew with cashews, dried fruit, and saffron.", halfTray: "$87.00", fullTray: "$169.00" },
+      { name: "Malai Kofta", description: "Cottage cheese, potato & dried fruit dumplings in saffron-cashew sauce.", halfTray: "$89.00", fullTray: "$173.00" },
       { name: "Saag Paneer", description: "Soft Indian cheese with pureed spinach, onions, ginger, garlic.", halfTray: "$89.00", fullTray: "$172.00" },
       { name: "Paneer Tikka Masala", description: "Indian cottage cheese in tomato-cream sauce.", halfTray: "$89.00", fullTray: "$172.00" },
+      { name: "Paneer Makhani", description: "Indian cottage cheese in tomato-cream sauce.", halfTray: "$89.00", fullTray: "$172.00" },
     ]
   },
   {
@@ -388,33 +409,44 @@ const cateringMenu = [
       { name: "Chicken Saag", description: "Chicken with pureed spinach, ginger, garlic, and spices.", halfTray: "$93.00", fullTray: "$179.00" },
       { name: "Chicken Korma", description: "Chicken pieces cooked in almond cream sauce.", halfTray: "$93.00", fullTray: "$179.00" },
       { name: "Chicken Vindaloo", description: "Chicken in fiery Goan sauce with garlic, vinegar, cumin.", halfTray: "$93.00", fullTray: "$179.00" },
+      { name: "Chicken Do Pyaza", description: "Chicken cooked with onions, peppers and spices.", halfTray: "$93.00", fullTray: "$179.00" },
+      { name: "Chicken Curry", description: "Chicken with whole spices, poppy seeds, mustard seeds, curry leaves.", halfTray: "$93.00", fullTray: "$179.00" },
+      { name: "Mango Chicken", description: "Chicken cooked in mango and sesame sauce.", halfTray: "$93.00", fullTray: "$179.00" },
     ]
   },
   {
     name: "Lamb Entrees",
     items: [
-      { name: "Lamb Rogan Josh", description: "Lamb with onions, tomatoes, Kashmiri red chiles, spices.", halfTray: "$97.00", fullTray: "$191.00" },
+      { name: "Lamb Rogan Josh", description: "Lamb with onions, tomatoes, Kashmiri red chiles, spices, aniseed.", halfTray: "$97.00", fullTray: "$191.00" },
       { name: "Lamb Tikka Masala", description: "Lamb cooked in clay oven with rich tomato & fenugreek sauce.", halfTray: "$97.00", fullTray: "$191.00" },
       { name: "Lamb Korma", description: "Boneless lamb in cashew-saffron cream sauce.", halfTray: "$97.00", fullTray: "$191.00" },
       { name: "Lamb Vindaloo", description: "Lamb in fiery Goan sauce with garlic, vinegar, cumin.", halfTray: "$97.00", fullTray: "$191.00" },
+      { name: "Lamb Chettinad", description: "Curry with fresh curry leaves, mustard seed, black peppers, coconut milk.", halfTray: "$97.00", fullTray: "$191.00" },
+      { name: "Lamb Bhuna", description: "Lamb cooked in spices, onions, and tomatoes.", halfTray: "$97.00", fullTray: "$191.00" },
+      { name: "Lamb Kadai", description: "Lamb with fresh vegetables, bell peppers and special sauce.", halfTray: "$97.00", fullTray: "$191.00" },
       { name: "Lamb Saag", description: "Cubes of lamb sautéed with fresh spinach and spices.", halfTray: "$95.00", fullTray: "$185.00" },
     ]
   },
   {
     name: "Seafood Entrees",
     items: [
-      { name: "Goan Salmon Curry", description: "Salmon fillet cooked with coconut milk, cumin, curry leaves.", halfTray: "$115.00", fullTray: "$200.00" },
+      { name: "Goan Salmon Curry", description: "Salmon fillet cooked with coconut milk, cumin, curry leaves, lime juice.", halfTray: "$115.00", fullTray: "$200.00" },
+      { name: "Fish Masala (Salmon)", description: "Fish cooked in onion, tomatoes, ginger, garlic, ground spice.", halfTray: "$115.00", fullTray: "$200.00" },
       { name: "Goan Shrimp Curry", description: "In coconut, tomato, tamarind sauce with mustard seeds & curry leaves.", halfTray: "$120.00", fullTray: "$220.00" },
+      { name: "Shrimp Korma", description: "Shrimp in creamy cashew based curry.", halfTray: "$120.00", fullTray: "$220.00" },
+      { name: "Shrimp Saag", description: "Shrimp with pureed spinach, ginger, garlic, and spices.", halfTray: "$120.00", fullTray: "$220.00" },
       { name: "Shrimp Tikka Masala", description: "Shrimp cooked in clay oven with rich tomato & fenugreek sauce.", halfTray: "$120.00", fullTray: "$220.00" },
+      { name: "Shrimp Curry", description: "Shrimp cooked in traditional home style curry.", halfTray: "$120.00", fullTray: "$220.00" },
     ]
   },
   {
     name: "Biryani",
     items: [
-      { name: "Vegetable Biryani", description: "Fried basmati rice with vegetables, nuts, and spices.", halfTray: "$79.00", fullTray: "$149.00" },
+      { name: "Vegetable Biryani", description: "Fried basmati rice with vegetables, nuts, and spices. Served with raita.", halfTray: "$79.00", fullTray: "$149.00" },
       { name: "Chicken Biryani", description: "Fried basmati rice with chicken, vegetables, nuts, and spices.", halfTray: "$93.00", fullTray: "$179.00" },
       { name: "Lamb Biryani", description: "Fried basmati rice with lamb, vegetables, nuts, and spices.", halfTray: "$99.00", fullTray: "$189.00" },
       { name: "Goat Biryani", description: "Basmati rice with goat cooked with herbs and spices.", halfTray: "$120.00", fullTray: "$235.00" },
+      { name: "Shrimp Biryani", description: "Fried basmati rice with shrimp, vegetables, nuts, and spices.", halfTray: "$120.00", fullTray: "$235.00" },
     ]
   },
   {
@@ -422,8 +454,12 @@ const cateringMenu = [
     items: [
       { name: "Naan", description: "Leavened flatbread cooked in clay oven.", perPiece: "$3.00/piece" },
       { name: "Roti", description: "Whole wheat flatbread.", perPiece: "$3.00/piece" },
+      { name: "OM Bread", description: "Sweet stuffed bread.", perPiece: "$4.50/piece" },
+      { name: "Paneer Naan", description: "Cheese stuffed bread.", perPiece: "$4.50/piece" },
       { name: "Garlic Naan", description: "Garlic stuffed bread.", perPiece: "$3.50/piece" },
       { name: "Onion Naan", description: "Leavened flatbread stuffed with spiced diced onions.", perPiece: "$4.50/piece" },
+      { name: "Lacha Paratha", description: "Tandoor-baked whole wheat multi layered flaky bread.", perPiece: "$3.50/piece" },
+      { name: "Aloo Paratha", description: "Tandoor-baked whole wheat bread with mildly spiced potatoes.", perPiece: "$4.50/piece" },
     ]
   },
   {
@@ -431,13 +467,15 @@ const cateringMenu = [
     items: [
       { name: "Basmati Rice", description: "Aromatic long grain rice.", halfTray: "$40.00", fullTray: "$75.00" },
       { name: "OM Sweet Rice", description: "Saffron rice cooked with fruits and nuts.", halfTray: "$45.00", fullTray: "$85.00" },
+      { name: "Lemon Rice", description: "Cooked with lemon juice, mustard seeds, fried peanuts, curry leaves.", halfTray: "$45.00", fullTray: "$85.00" },
+      { name: "Matar Pulao", description: "Cooked with cumin and green peas.", halfTray: "$45.00", fullTray: "$85.00" },
       { name: "Green Salad", description: "Tomato, carrot, lettuce, balsamic dressing.", halfTray: "$40.00", fullTray: "$75.00" },
     ]
   },
   {
     name: "Desserts & Beverages",
     items: [
-      { name: "Gulab Jamun", description: "Soft dumplings of milk, flour simmered in rose water, cardamom.", perPiece: "$2.25/person" },
+      { name: "Gulab Jamun", description: "Soft dumplings of milk, flour simmered in simple syrup, rose water, cardamom.", perPiece: "$2.25/person" },
       { name: "OM Kheer", description: "Almond and apple flavored rice pudding in cardamom.", halfTray: "$60.00", fullTray: "$140.00" },
       { name: "Soda", description: "Diet Coke, Coke, Ginger Ale, Sprite.", perPiece: "$1.99/person" },
       { name: "Mango Lassi", description: "Refreshing mango yogurt drink.", perPiece: "$3.95/person" },
@@ -469,6 +507,7 @@ export default function OrderPage() {
         lunchMenu={lunchMenu}
         barMenu={barMenu}
         cateringMenu={cateringMenu}
+        omSpecialMenu={omSpecialMenu}
       />
     </div>
   );

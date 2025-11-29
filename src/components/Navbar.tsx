@@ -40,6 +40,14 @@ export default function Navbar() {
             <Link href="/contact" className="text-gray-300 hover:text-white px-4 py-2 text-sm font-medium transition-colors">
               Contact
             </Link>
+            <a 
+              href="https://www.opentable.com/booking/restref/availability?rid=63796&lang=en-US&restRef=63796&partySize=2&otSource=Restaurant%20website" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-300 hover:text-white px-4 py-2 text-sm font-medium transition-colors"
+            >
+              Reservations
+            </a>
             <Link 
               href="/order" 
               className="ml-4 bg-[#C41E3A] text-white px-5 py-2.5 rounded text-sm font-semibold hover:bg-[#a01830] transition-colors shadow-md flex items-center gap-2 relative"
@@ -91,6 +99,7 @@ export default function Navbar() {
             <Link href="/menu" className="block text-gray-300 hover:text-white py-2 text-base" onClick={() => setMobileMenuOpen(false)}>Menu</Link>
             <Link href="/about" className="block text-gray-300 hover:text-white py-2 text-base" onClick={() => setMobileMenuOpen(false)}>About</Link>
             <Link href="/contact" className="block text-gray-300 hover:text-white py-2 text-base" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
+            <a href="https://www.opentable.com/booking/restref/availability?rid=63796&lang=en-US&restRef=63796&partySize=2&otSource=Restaurant%20website" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white py-2 text-base" onClick={() => setMobileMenuOpen(false)}>Reservations</a>
             <Link href="/order" className="block text-gray-300 hover:text-white py-2 text-base" onClick={() => setMobileMenuOpen(false)}>Order Online</Link>
           </div>
         </div>

@@ -7,6 +7,62 @@ export const metadata: Metadata = {
   description: 'Browse our extensive menu of authentic Indian dishes.',
 };
 
+// OM Special menu items (from the OM Special menu image)
+const omSpecialMenu = {
+  appetizers: {
+    chicken: [
+      { name: "Chicken Tikka", description: "Boneless chicken marinated in a hung yogurt with tandoori spices and tandoor grilled" },
+      { name: "Malai Kabab", description: "Chicken marinated with cheddar cheese, saffron, white pepper, hung yogurt" },
+    ],
+    lamb: [
+      { name: "Lamb Seek Kabab", description: "Tandoor grilled freshly ground lamb sausages seasoned with cumin, ginger and mint" },
+      { name: "Lamb Boti Kebab", description: "Marinated with fenugreek, ginger, yogurt, lemon juice" },
+    ],
+    vegetable: [
+      { name: "Samosa", description: "Turnovers filled with seasoned potatoes and green peas. Served with house chutneys" },
+      { name: "Assorted Pakora", description: "Vegetable medley chickpea batter fried and served sweet and sour chutney" },
+      { name: "Kachori Chaat", description: "Crispy refined flour puffs filled with lentils and mild spices" },
+      { name: "Papri Chaat", description: "Whole wheat crisps tossed with yogurt, mint and tamarind sauces" },
+      { name: "Onion Bhajjias", description: "Battered and fried onion fritters served with house chutneys" },
+      { name: "Gobi Sweet & Sour", description: "Crispy florets, tossed with garlic tomato sauce" },
+    ],
+  },
+  soups: [
+    { name: "Chicken Soup", description: "Broth simmered in diced chicken, spices" },
+    { name: "Lentil Soup", description: "Lentil broth, turmeric milafu spices and a hint of lime juice" },
+  ],
+  salad: [
+    { name: "Green Salad", description: "Iceburg lettuce, carrots, cucumber and tomato, served with balsamic dressing" },
+  ],
+  entrees: {
+    chicken: [
+      { name: "Chicken Curry", description: "Traditional Indian style chicken curry, very savory with aromatic spices" },
+      { name: "Chicken Tikka Masala", description: "Grilled marinated chicken in a creamy tomato fenugreek sauce" },
+      { name: "Chicken Korma", description: "Roasted cashew nut, raisin, golden fried onion, saffron milk, cream and mild spices" },
+      { name: "Chicken Palak", description: "Fresh spinach, fenugreek leaves, garlic, nutmeg, roasted spices" },
+      { name: "Chicken Vindaloo", description: "Freshly ground spices, toddy vinegar, whole dry chili sauce" },
+    ],
+    lamb: [
+      { name: "Lamb Palak (Spinach)", description: "Lamb cooked with spinach and a touch of cream" },
+      { name: "Lamb Rogan Josh", description: "Slow cooked lamb with intense spices in a onion and tomato curry sauce" },
+      { name: "Lamb Curry", description: "Lamb seasoned with curry leaves, ginger, garlic, onion tomato sauce" },
+      { name: "Lamb Vindaloo", description: "Lamb cooked hot and spicy vinegar and hot chili sauce" },
+    ],
+    vegetable: [
+      { name: "Om Daal", description: "Mix black lentils cooked with butter and in a fresh tomato sauce" },
+      { name: "Delhi Masala Daal", description: "Yellow lentils cooked slowly with herbs and spices" },
+      { name: "Vegetable Korma", description: "Fresh vegetable mix cooked in a mildly spiced almond cream sauce" },
+      { name: "Bhindi Masala", description: "Fresh diced okra, tossed in cumin, ginger, whole chili, onion tomato" },
+      { name: "Palak Paneer", description: "Freshly cooked spinach with Indian cheese" },
+      { name: "Chana Saag", description: "Chickpeas, fresh spinach, cooked with onion tomato and ginger garlic" },
+      { name: "Mushroom Palak", description: "Mushroom sorted with fresh spinach, ginger, garlic, cumin seeds" },
+      { name: "Malai Kofta", description: "Vegetable dumplings simmered in a creamy fenugreek, tomato sauce" },
+      { name: "Chana Masala", description: "White chickpeas in a spicy, tangy, onion and tomato gravy-based curry" },
+      { name: "Aloo Gobi Matar", description: "Diced potato, cauliflower florets, and green peas seasoned with cumin, ginger, and spices" },
+    ],
+  },
+};
+
 // Static Take Out menu data - prices are take-out prices (ending in .95)
 const takeOutMenu = [
   {
@@ -17,20 +73,20 @@ const takeOutMenu = [
       { id: "sweet-sour-gobi", name: "Sweet & Sour Gobi", description: "Cauliflower cooked in sweet & sour sauce.", price: 8.95, image: null },
       { id: "onion-bhajjias", name: "Onion Bhajjias", description: "Savory deep fried onion fritters made with Bengal gram flours.", price: 9.95, image: null },
       { id: "assorted-pakora", name: "Assorted Pakora", description: "Vegetable medley chickpea batter fried and served with sweet and sour chutney.", price: 9.95, image: null },
+      { id: "kachori-chaat", name: "Kachori Chaat", description: "Crispy refined flour puffs filled with lentils and mild spices", price: 9.95, image: null },
+      { id: "papri-chaat", name: "Papri Chaat", description: "Whole wheat crisps tossed with yogurt, mint and tamarind sauces", price: 9.95, image: null },
       { id: "tandoori-mix-veg", name: "Tandoori Mix Veg.", description: "Florets of mixed veggies marinated with spices, ginger, garlic and grilled.", price: 10.95, image: null },
       { id: "tandoori-mushroom", name: "Tandoori Mushroom", description: "Mushrooms marinated with roasted spices, hung yogurt and pickles", price: 10.95, image: null },
-      { id: "tandoori-paneer", name: "Tandoori Paneer", description: "Large chunks of Indian cottage cheese marinated in a spiced hung yogurt and grilled to perfection.", price: 12.95, image: null },
+      { id: "tandoori-paneer", name: "Tandoori Paneer", description: "Large chunks of Indian cottage cheese marinated in a spiced hung yogurt and grilled to perfection.", price: 11.95, image: null },
     ]
   },
   {
     id: "non-veg-appetizers",
     name: "Non-Veg. Appetizers",
     items: [
-      { id: "chicken-65", name: "Chicken 65", description: "Stir-fried chicken sautéed with bell pepper, onion, ginger and garlic.", price: 11.95, image: null },
       { id: "malai-chicken-kabab", name: "Malai Chicken Kabab", description: "Marinated in yogurt, saffron, spices & herbs.", price: 11.95, image: null },
       { id: "achari-chicken", name: "Achari Chicken", description: "Tandoori grilled with pickling spices.", price: 11.95, image: null },
       { id: "seek-kabab", name: "Seek Kabab", description: "Ground lamb seasoned with onions & spices", price: 12.95, image: null },
-      { id: "chili-shrimp", name: "Chili Shrimp", description: "Indo-Chinese tossed with bell peppers, onions, chilis, garlic and ginger.", price: 13.95, image: null },
     ]
   },
   {
@@ -206,10 +262,12 @@ const takeOutMenu = [
     id: "beverages",
     name: "Beverage",
     items: [
-      { id: "mango-lassi", name: "Mango Lassi", description: "Sweet yogurt drink blended with mango", price: 5.95, image: null },
+      { id: "mango-lassi", name: "Mango Lassi", description: "Sweet yogurt drink blended with mango", price: 6.95, image: null },
       { id: "sweet-lassi", name: "Sweet Lassi", description: "Sweet yogurt drink", price: 4.95, image: null },
       { id: "salted-lassi", name: "Salted Lassi", description: "Traditional salted yogurt drink", price: 4.95, image: null },
       { id: "masala-chai", name: "Masala Chai", description: "Spiced Indian tea", price: 3.95, image: null },
+      { id: "water", name: "Water", description: "Bottled water", price: 2.95, image: null },
+      { id: "sparkling-water", name: "Sparkling Water", description: "Sparkling mineral water", price: 3.95, image: null },
       { id: "soft-drinks", name: "Soft Drinks", description: "Coke, Diet Coke, Sprite, Ginger Ale", price: 2.95, image: null },
     ]
   },
@@ -256,226 +314,15 @@ const lunchMenu = {
     },
   ],
   happyHour: {
-    wines: [
-      { name: "Riesling, Alsace FR", description: "Defined by its graceful, delicate fruit aromas and refreshing finish. Pairs beautifully with a variety of dishes.", price: "$9" },
-      { name: "Rosé, Mi Mi, Provence FR", description: "Bright Salmon. Inviting Watermelon. Violets. Refreshing, dry strawberry.", price: "$9" },
-      { name: "Malbec Vista Flores, Catena, Mendoza AR", description: "Dark violet color with black reflections. Dark and red fruit aromas with floral notes of lavender, violet, and mocha feels rich with notes of sweet spice.", price: "$9" },
-      { name: "Rioja Crianza, Bujanda, Spain", description: "Aromas of blackberry with spicy tones (clove and cinnamon), mild tobacco and light balsamic notes.", price: "$9" },
-    ],
-    beverages: [
-      { name: "Black Tea", price: "$3" },
-      { name: "Masala Tea", price: "$3" },
-      { name: "Ice Tea", price: "$3" },
-      { name: "Soda", price: "$3" },
-      { name: "Still Water", price: "$6" },
-      { name: "Sparkling Water", price: "$5" },
-      { name: "Mango Lassi", price: "$6" },
-    ],
-    beers: [
-      { name: "Stella", price: "$7" },
-      { name: "Kingfisher", price: "$7" },
-    ],
-    desserts: [
-      { name: "Ras Malai", description: "Steamed cottage cheese dumplings with saffron milk", price: "$5" },
-      { name: "Gulab Jamun", description: "Cake balls in a warm rose syrup", price: "$5" },
-      { name: "OM Kheer", description: "Almond & apple flavored rice pudding in cardamom", price: "$5" },
-    ],
+    wines: [],
+    beverages: [],
+    beers: [],
+    desserts: [],
   },
 };
 
-// Bar menu data - Dine-in only
-const barMenu = [
-  {
-    category: "Special House Cocktails",
-    items: [
-      { name: "Bar Special", description: "Tequila, Ginger Beer, Blue Curacao, Lime wedge, Granulated Sugar", price: "$13" },
-      { name: "York Ave Sour", description: "Bourbon whiskey, Lemon juice, Red wine, Simple Syrup", price: "$13" },
-      { name: "Gin Daiquiri", description: "Gin, Ginger Liqueur, Kahlua", price: "$13" },
-      { name: "Mango Martini", description: "Vodka, Mango Juice, Fresh Lime Juice", price: "$13" },
-      { name: "Rum Punch", description: "Dark rum, Lime juice, Simple syrup, 3 Dashes Bitter, Grenadine, Splash soda water", price: "$13" },
-      { name: "From Chef", description: "Vodka, Turmeric, Lime, Ginger Beer", price: "$13" },
-      { name: "Coffee Negroni", description: "Coffee, Tequila, Campari, Sweet Vermouth", price: "$13" },
-    ]
-  },
-  {
-    category: "Classic Cocktails",
-    items: [
-      { name: "Moscow Mule", description: "Vodka, Ginger beer, splash of lime", price: "$13" },
-      { name: "Pina Colada", description: "Rum, Pineapple juice, Coconut milk", price: "$13" },
-      { name: "Strawberry Daiquiri", description: "Rum, Lime Juice, simple syrup", price: "$13" },
-      { name: "Vodka Daiquiri", description: "Vodka, Peach Blossom, Lime Juice", price: "$13" },
-      { name: "Aperol Spritz", description: "Prosecco, Aperol Spritz, Splash of Club Soda", price: "$13" },
-      { name: "Lychee Martini", description: "Vodka, lychee juice, lime juice", price: "$13" },
-    ]
-  },
-  {
-    category: "Wine by the Glass - Red",
-    items: [
-      { name: "Malbec Vista Flores, Catena", description: "Mendoza AR - Dark violet with floral notes of lavender, violet, and mocha", price: "$11" },
-      { name: "Cabernet Sauvignon, Ryder", description: "CA - Rich, smooth with hints of mocha, cherry and black berries", price: "$12" },
-      { name: "Rioja Crianza, Bujanda", description: "Rioja SP - Aromas of blackberry with spicy tones, mild tobacco", price: "$12" },
-      { name: "Valpolicella Classico Superiore, Zenato", description: "Veneto IT - Wild berries, blackcurrants, black cherries, hints of chocolate", price: "$12" },
-      { name: "Pinot Noir, Napa Valley", description: "Hand selected grapes, tradition and family heritage", price: "$12" },
-    ]
-  },
-  {
-    category: "Wine by the Glass - White",
-    items: [
-      { name: "Dr. L Riesling", description: "Mosel DE - Bright, refreshing, fruit-driven with crisp finish", price: "$11" },
-      { name: "Pinot Grigio, Zenato", description: "Delle Venezia IT - Soft texture with hint of cantaloupe", price: "$12" },
-      { name: "Villa Maria Sauvignon Blanc", description: "Marlborough NZ - Aromas of gooseberry and passionfruit", price: "$12" },
-      { name: "Chardonnay, Black's Station", description: "CA - Flavors of melon, mango, and toasty oak", price: "$12" },
-    ]
-  },
-  {
-    category: "Rosé & Bubbles (Glass)",
-    items: [
-      { name: "Rosé, Mont Gravet", description: "Languedoc FR - Light pink with strawberries and raspberries", price: "$11" },
-      { name: "Zardetto Spumante", description: "Veneto IT - Notes of pears, apples, and peaches", price: "$11" },
-    ]
-  },
-  {
-    category: "Wine by the Bottle - Red",
-    items: [
-      { name: "Cabernet Sauvignon, Ryder", description: "CA - Rich, smooth with hints of mocha, cherry and black berries", price: "$46" },
-      { name: "Rioja Crianza, Bujanda", description: "Rioja SP - Aromas of blackberry with spicy tones, mild tobacco", price: "$45" },
-      { name: "Chianti Classico, Cultusboni", description: "Tuscany IT - Medium body, bright red fruit, notes of cherries, cinnamon and clove", price: "$45" },
-      { name: "Valpolicella Classico Superiore, Zenato", description: "Veneto IT - Wild berries, blackcurrants, black cherries, hints of chocolate", price: "$46" },
-      { name: "Malbec Vista Flores, Catena", description: "Mendoza AR - Dark violet with floral notes of lavender, violet, and mocha", price: "$45" },
-      { name: "Cotes Du Rhone, Kermit Lynch", description: "FR - Rich purple, spice box and forest floor nose with robust dark fruits", price: "$46" },
-      { name: "Pinot Noir, Napa Valley", description: "Hand selected grapes, tradition and family heritage", price: "$45" },
-    ]
-  },
-  {
-    category: "Wine by the Bottle - White",
-    items: [
-      { name: "Pinot Grigio, Zenato", description: "Delle Venezia IT - Soft texture with hint of cantaloupe", price: "$45" },
-      { name: "Villa Maria Sauvignon Blanc", description: "Marlborough NZ - Aromas of gooseberry and passionfruit", price: "$46" },
-      { name: "Chardonnay, Black's Station", description: "CA - Flavors of melon, mango, and toasty oak", price: "$45" },
-      { name: "Dr. L Riesling", description: "Mosel DE - Bright, refreshing, fruit-driven with crisp finish", price: "$44" },
-      { name: "Grüner Veltliner, Stadt Krems", description: "Kremstal AT - Fresh with notes of green apple, lemon, radish, arugula", price: "$46" },
-    ]
-  },
-  {
-    category: "Wine by the Bottle - Rosé & Bubbles",
-    items: [
-      { name: "Rosé, Mont Gravet", description: "Languedoc FR - Light pink with strawberries and raspberries", price: "$42" },
-      { name: "Zardetto Spumante", description: "Veneto IT - Notes of pears, apples, and peaches", price: "$42" },
-    ]
-  },
-  {
-    category: "Reserve Wines",
-    items: [
-      { name: "Chateau Beau-Site", description: "Chateau FR - Dark ruby red with aromas of tobacco leaf, leather, and blackcurrant", price: "$80" },
-      { name: "Bordeaux Rouge, Beau Rivage", description: "Bordeaux FR - Ruby with violet reflections, fragrant blackberry, raspberry", price: "$45" },
-      { name: "Chateau Laplagnotte-Bellevue", description: "Bordeaux FR - Merlot and Cabernet Franc, black currant, black cherry, licorice", price: "$60" },
-      { name: "Chateau Gaudin", description: "Pauillac FR - Aromas of cider, ripe berries, and cherries with vanilla and leather", price: "$70" },
-      { name: "Chateauneuf Du Pape Rouge", description: "Domaine De La Solitude FR - Garrigue, flowers of cistus, cocoa and morello cherry", price: "$85" },
-    ]
-  },
-  {
-    category: "Half Bottles",
-    items: [
-      { name: "Cabernet Sauvignon, Textbook", description: "Napa Valley CA - Anise, blueberry, dried cranberry, and sage", price: "$30" },
-      { name: "Pinot Noir, King Estate", description: "Willamette Valley OR - Fresh fruits, mocha, toast, clove, graphite, and tea", price: "$30" },
-    ]
-  },
-  {
-    category: "Beer",
-    items: [
-      { name: "Taj Mahal (650ml)", price: "$12" },
-      { name: "Kingfisher", price: "$8" },
-      { name: "Stella", price: "$8" },
-      { name: "Non-Alcoholic Beer", price: "$8" },
-    ]
-  },
-  {
-    category: "Bourbon/Rye/Whiskey",
-    items: [
-      { name: "Old Crow", price: "$12" },
-      { name: "Jack Daniels", price: "$13" },
-      { name: "Woodford Reserve", price: "$15" },
-      { name: "Makers Mark", price: "$15" },
-      { name: "Jameson", price: "$15" },
-      { name: "Bulleit Rye", price: "$15" },
-    ]
-  },
-  {
-    category: "Blended Scotch",
-    items: [
-      { name: "Johnnie Walker Black 12yrs", price: "$15" },
-    ]
-  },
-  {
-    category: "Single Malt Scotch",
-    items: [
-      { name: "Macallan 12yrs", price: "$16" },
-      { name: "Glenfiddich 12yrs", price: "$16" },
-      { name: "Glenlivet 12yrs", price: "$16" },
-    ]
-  },
-  {
-    category: "Tequila",
-    items: [
-      { name: "Jose Cuervo (Silver/Gold)", price: "$11" },
-      { name: "Partida", price: "$12" },
-      { name: "Herradura", price: "$14" },
-      { name: "Don Julio Blanco", price: "$15" },
-      { name: "Silver Patron", price: "$15" },
-    ]
-  },
-  {
-    category: "Gin",
-    items: [
-      { name: "Hendricks", price: "$13" },
-      { name: "Bombay Sapphire", price: "$13" },
-      { name: "Tanqueray", price: "$13" },
-      { name: "Beefeater", price: "$13" },
-    ]
-  },
-  {
-    category: "Vodka",
-    items: [
-      { name: "Titos", price: "$13" },
-      { name: "Ketel One", price: "$14" },
-      { name: "Ketel One Citroen", price: "$14" },
-      { name: "Absolut", price: "$14" },
-      { name: "Grey Goose", price: "$15" },
-    ]
-  },
-  {
-    category: "Rum",
-    items: [
-      { name: "Bacardi", price: "$12" },
-      { name: "Captain Morgan", price: "$12" },
-    ]
-  },
-  {
-    category: "Cognac",
-    items: [
-      { name: "Hennessy VSOP", price: "$16" },
-    ]
-  },
-  {
-    category: "Liqueurs",
-    items: [
-      { name: "Baileys", price: "$10" },
-      { name: "St Germain", price: "$10" },
-      { name: "Domaine De Canton", price: "$10" },
-      { name: "Amaro Lucano", price: "$10" },
-      { name: "Peach Blossom", price: "$10" },
-      { name: "Sour Apple", price: "$10" },
-      { name: "Blue Curaçao", price: "$10" },
-      { name: "Campari", price: "$10" },
-    ]
-  },
-  {
-    category: "Dessert Wine",
-    items: [
-      { name: "Vietti Moscato D'Asti", description: "Taste of juicy yellow fruits (pears, apricots, and peaches) with floral scent", price: "$8" },
-    ]
-  },
-];
+// Bar menu data - not used anymore since Dine In removed
+const barMenu: { category: string; items: { name: string; description?: string; price: string }[] }[] = [];
 
 // Catering menu data
 const cateringMenu = [
@@ -517,7 +364,6 @@ const cateringMenu = [
       { name: "Malai Kofta", description: "Cottage cheese, potato & dried fruit dumplings in saffron-cashew sauce.", halfTray: "$89.00", fullTray: "$173.00" },
       { name: "Saag Paneer", description: "Soft Indian cheese with pureed spinach, onions, ginger, garlic.", halfTray: "$89.00", fullTray: "$172.00" },
       { name: "Paneer Tikka Masala", description: "Indian cottage cheese in tomato-cream sauce.", halfTray: "$89.00", fullTray: "$172.00" },
-      { name: "Paneer Makhani", description: "Indian cottage cheese in tomato-cream sauce.", halfTray: "$89.00", fullTray: "$172.00" },
     ]
   },
   {
@@ -528,9 +374,6 @@ const cateringMenu = [
       { name: "Chicken Saag", description: "Chicken with pureed spinach, ginger, garlic, and spices.", halfTray: "$93.00", fullTray: "$179.00" },
       { name: "Chicken Korma", description: "Chicken pieces cooked in almond cream sauce.", halfTray: "$93.00", fullTray: "$179.00" },
       { name: "Chicken Vindaloo", description: "Chicken in fiery Goan sauce with garlic, vinegar, cumin.", halfTray: "$93.00", fullTray: "$179.00" },
-      { name: "Chicken Do Pyaza", description: "Chicken cooked with onions, peppers and spices.", halfTray: "$93.00", fullTray: "$179.00" },
-      { name: "Chicken Curry", description: "Chicken with whole spices, poppy seeds, mustard seeds, curry leaves.", halfTray: "$93.00", fullTray: "$179.00" },
-      { name: "Mango Chicken", description: "Chicken cooked in mango and sesame sauce.", halfTray: "$93.00", fullTray: "$179.00" },
     ]
   },
   {
@@ -540,9 +383,6 @@ const cateringMenu = [
       { name: "Lamb Tikka Masala", description: "Lamb cooked in clay oven with rich tomato & fenugreek sauce.", halfTray: "$97.00", fullTray: "$191.00" },
       { name: "Lamb Korma", description: "Boneless lamb in cashew-saffron cream sauce.", halfTray: "$97.00", fullTray: "$191.00" },
       { name: "Lamb Vindaloo", description: "Lamb in fiery Goan sauce with garlic, vinegar, cumin.", halfTray: "$97.00", fullTray: "$191.00" },
-      { name: "Lamb Chettinad", description: "Curry with fresh curry leaves, mustard seed, black peppers, coconut milk.", halfTray: "$97.00", fullTray: "$191.00" },
-      { name: "Lamb Bhuna", description: "Lamb cooked in spices, onions, and tomatoes.", halfTray: "$97.00", fullTray: "$191.00" },
-      { name: "Lamb Kadai", description: "Lamb with fresh vegetables, bell peppers and special sauce.", halfTray: "$97.00", fullTray: "$191.00" },
       { name: "Lamb Saag", description: "Cubes of lamb sautéed with fresh spinach and spices.", halfTray: "$95.00", fullTray: "$185.00" },
     ]
   },
@@ -550,12 +390,8 @@ const cateringMenu = [
     name: "Seafood Entrees",
     items: [
       { name: "Goan Salmon Curry", description: "Salmon fillet cooked with coconut milk, cumin, curry leaves, lime juice.", halfTray: "$115.00", fullTray: "$200.00" },
-      { name: "Fish Masala (Salmon)", description: "Fish cooked in onion, tomatoes, ginger, garlic, ground spice.", halfTray: "$115.00", fullTray: "$200.00" },
       { name: "Goan Shrimp Curry", description: "In coconut, tomato, tamarind sauce with mustard seeds & curry leaves.", halfTray: "$120.00", fullTray: "$220.00" },
-      { name: "Shrimp Korma", description: "Shrimp in creamy cashew based curry.", halfTray: "$120.00", fullTray: "$220.00" },
-      { name: "Shrimp Saag", description: "Shrimp with pureed spinach, ginger, garlic, and spices.", halfTray: "$120.00", fullTray: "$220.00" },
       { name: "Shrimp Tikka Masala", description: "Shrimp cooked in clay oven with rich tomato & fenugreek sauce.", halfTray: "$120.00", fullTray: "$220.00" },
-      { name: "Shrimp Curry", description: "Shrimp cooked in traditional home style curry.", halfTray: "$120.00", fullTray: "$220.00" },
     ]
   },
   {
@@ -565,7 +401,6 @@ const cateringMenu = [
       { name: "Chicken Biryani", description: "Fried basmati rice with chicken, vegetables, nuts, and spices.", halfTray: "$93.00", fullTray: "$179.00" },
       { name: "Lamb Biryani", description: "Fried basmati rice with lamb, vegetables, nuts, and spices.", halfTray: "$99.00", fullTray: "$189.00" },
       { name: "Goat Biryani", description: "Basmati rice with goat cooked with herbs and spices.", halfTray: "$120.00", fullTray: "$235.00" },
-      { name: "Shrimp Biryani", description: "Fried basmati rice with shrimp, vegetables, nuts, and spices.", halfTray: "$120.00", fullTray: "$235.00" },
     ]
   },
   {
@@ -573,12 +408,8 @@ const cateringMenu = [
     items: [
       { name: "Naan", description: "Leavened flatbread cooked in clay oven.", perPiece: "$3.00/piece" },
       { name: "Roti", description: "Whole wheat flatbread.", perPiece: "$3.00/piece" },
-      { name: "OM Bread", description: "Sweet stuffed bread.", perPiece: "$4.50/piece" },
-      { name: "Paneer Naan", description: "Cheese stuffed bread.", perPiece: "$4.50/piece" },
       { name: "Garlic Naan", description: "Garlic stuffed bread.", perPiece: "$3.50/piece" },
       { name: "Onion Naan", description: "Leavened flatbread stuffed with spiced diced onions.", perPiece: "$4.50/piece" },
-      { name: "Lacha Paratha", description: "Tandoor-baked whole wheat multi layered flaky bread.", perPiece: "$3.50/piece" },
-      { name: "Aloo Paratha", description: "Tandoor-baked whole wheat bread with mildly spiced potatoes.", perPiece: "$4.50/piece" },
     ]
   },
   {
@@ -586,8 +417,6 @@ const cateringMenu = [
     items: [
       { name: "Basmati Rice", description: "Aromatic long grain rice.", halfTray: "$40.00", fullTray: "$75.00" },
       { name: "OM Sweet Rice", description: "Saffron rice cooked with fruits and nuts.", halfTray: "$45.00", fullTray: "$85.00" },
-      { name: "Lemon Rice", description: "Cooked with lemon juice, mustard seeds, fried peanuts, curry leaves.", halfTray: "$45.00", fullTray: "$85.00" },
-      { name: "Matar Pulao", description: "Cooked with cumin and green peas.", halfTray: "$45.00", fullTray: "$85.00" },
       { name: "Green Salad", description: "Tomato, carrot, lettuce, balsamic dressing.", halfTray: "$40.00", fullTray: "$75.00" },
     ]
   },
@@ -630,6 +459,7 @@ export default function MenuPage() {
             lunchMenu={lunchMenu}
             barMenu={barMenu}
             cateringMenu={cateringMenu}
+            omSpecialMenu={omSpecialMenu}
           />
 
           {/* Order CTA */}
