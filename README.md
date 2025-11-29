@@ -3,7 +3,6 @@
 ## Setup
 
 1.  **Environment Variables**: Copy `.env.example` (create one based on needed vars) to `.env`
-    *   `DATABASE_URL="file:./dev.db"` (for local SQLite)
     *   `TOAST_API_URL` (if available)
     *   `TOAST_RESTAURANT_GUID` (if available)
     *   `TOAST_AUTH_TOKEN` (if available)

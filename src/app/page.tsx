@@ -96,8 +96,8 @@ export default function Home() {
             <div className="relative">
               <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
                 <Image 
-                  src="/assets/OMIndianRestaurant_TandoonChicken.jpg" 
-                  alt="Tandoori Chicken"
+                  src="/assets/OMIndianRestaurant.jpg" 
+                  alt="OM Indian Restaurant"
                   fill
                   className="object-cover"
                 />

@@ -177,7 +177,8 @@ const takeOutMenu = [
       { id: "shrimp-curry", name: "Shrimp Curry", description: "Shrimp cooked in traditional Indian style curry.", price: 23.95, image: null },
       { id: "shrimp-korma", name: "Shrimp Korma", description: "Roasted cashew nut, raisin, golden fried onion, mix fruits, saffron and spices.", price: 23.95, image: null },
       { id: "shrimp-saag", name: "Shrimp Saag", description: "Onions, tomatoes with fresh sautéed spinach with ginger & garlic.", price: 23.95, image: null },
-      { id: "shrimp-salmon-vindaloo", name: "Shrimp/Salmon Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 23.95, image: null },
+      { id: "shrimp-vindaloo", name: "Shrimp Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 23.95, image: null },
+      { id: "salmon-vindaloo", name: "Salmon Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 23.95, image: null },
       { id: "shrimp-tikka-masala", name: "Shrimp Tikka Masala", description: "Grilled marinated shrimp in a creamy tomato fenugreek sauce.", price: 23.95, image: null },
     ]
   },
@@ -254,7 +255,8 @@ const takeOutMenu = [
       { id: "mango-chutney", name: "Mango Chutney", description: "A blend of ripe mangoes, sugar, and select spices", price: 4.95, image: null },
       { id: "raita", name: "Raita", description: "Yogurt with carrots & Cucumbers and spices", price: 4.95, image: null },
       { id: "jeera-aloo", name: "Jeera Aloo", description: "Cumin Flavored Potatoes.", price: 9.95, image: null },
-      { id: "om-daal-side", name: "Om Daal / Delhi Masala Daal", description: "Mix black lentils with butter or yellow lentils cooked slowly with herbs & spices", price: 9.95, image: null },
+      { id: "om-daal-side", name: "Om Daal", description: "Mix black lentils cooked with butter and in a fresh tomato sauce", price: 9.95, image: null },
+      { id: "delhi-masala-daal-side", name: "Delhi Masala Daal", description: "Yellow lentils cooked slowly with herbs and spices", price: 9.95, image: null },
     ]
   },
   {
@@ -343,47 +345,181 @@ const barMenu = [
     ]
   },
   {
-    category: "Wine by the Glass",
+    category: "Classic Cocktails",
     items: [
-      { name: "Chardonnay", description: "California", price: "$12" },
-      { name: "Pinot Grigio", description: "Italy", price: "$12" },
-      { name: "Sauvignon Blanc", description: "New Zealand", price: "$12" },
-      { name: "Riesling", description: "Germany", price: "$12" },
-      { name: "Cabernet Sauvignon", description: "California", price: "$12" },
-      { name: "Merlot", description: "California", price: "$12" },
-      { name: "Pinot Noir", description: "California", price: "$12" },
+      { name: "Moscow Mule", description: "Vodka, Ginger beer, splash of lime", price: "$13" },
+      { name: "Piña Colada", description: "Rum, Pineapple juice, Coconut milk", price: "$13" },
+      { name: "Strawberry Daiquiri", description: "Rum, Lime Juice, Simple syrup", price: "$13" },
+      { name: "Vodka Daiquiri", description: "Vodka, Peach Blossom, Lime Juice", price: "$13" },
+      { name: "Aperol Spritz", description: "Prosecco, Aperol, Splash of Club Soda", price: "$13" },
+      { name: "Lychee Martini", description: "Vodka, Lychee juice, Lime juice", price: "$13" },
     ]
   },
   {
-    category: "Wine by the Bottle",
+    category: "Wine by the Glass — Red Wines",
     items: [
-      { name: "Chardonnay", description: "California", price: "$40" },
-      { name: "Pinot Grigio", description: "Italy", price: "$40" },
-      { name: "Sauvignon Blanc", description: "New Zealand", price: "$40" },
-      { name: "Riesling", description: "Germany", price: "$40" },
-      { name: "Cabernet Sauvignon", description: "California", price: "$40" },
-      { name: "Merlot", description: "California", price: "$40" },
-      { name: "Pinot Noir", description: "California", price: "$40" },
+      { name: "Malbec Vista Flores, Catena", description: "Mendoza AR — Dark violet color with black reflections. Dark and red fruit aromas with floral notes of lavender, violet, and mocha; rich with notes of sweet spice.", price: "$11" },
+      { name: "Cabernet Sauvignon, Ryder", description: "California — Rich, smooth, and powerful at first, carrying hints of mocha along with flavors of cherry and black berries.", price: "$12" },
+      { name: "Rioja Crianza, Bujanda", description: "Rioja SP — Aromas of blackberry with spicy tones (clove and cinnamon), mild tobacco and light balsamic notes.", price: "$12" },
+      { name: "Valpolicella Classico Superiore, Zenato", description: "Veneto IT — Ruby red, fleshy aromas of wild berries, blackcurrants, black cherries, and spices, hints of chocolate.", price: "$12" },
+      { name: "Pinot Noir", description: "Napa Valley — Made from hand selected grapes, embodying tradition and family heritage.", price: "$12" },
+    ]
+  },
+  {
+    category: "Wine by the Glass — Rosé",
+    items: [
+      { name: "Rosé, Mont Gravet", description: "Languedoc FR — Light pink color and aromas of strawberries and raspberries. Fresh and harmonious on the palate, long lasting fruit flavors.", price: "$11" },
+    ]
+  },
+  {
+    category: "Wine by the Glass — White Wines",
+    items: [
+      { name: "Dr. L Riesling", description: "Mosel DE — A bright, refreshing, fruit-driven wine, with a juicy mid-palate and a crisp, drying finish.", price: "$11" },
+      { name: "Pinot Grigio, Zenato", description: "Delle Venezia IT — Pale sunlight color. Soft texture with a hint of cantaloupe and a medium dry finish.", price: "$12" },
+      { name: "Villa Maria Sauvignon Blanc", description: "Marlborough NZ — Overflowing with aromas of gooseberry and passionfruit with hint of lime and nettles.", price: "$12" },
+      { name: "Chardonnay, Black's Station", description: "California — With flavors of melon, mango, and toasty oak, boasts lovely aromas of pineapple and barrel spice.", price: "$12" },
+    ]
+  },
+  {
+    category: "Wine by the Glass — Bubbles",
+    items: [
+      { name: "Zardetto Spumante", description: "Veneto IT — Brilliant straw-yellow in color with a delicate pelage, with notes of pears, apples, and peaches with a hint of wildflowers.", price: "$11" },
+    ]
+  },
+  {
+    category: "Wine by the Bottle — Red Wines",
+    items: [
+      { name: "Cabernet Sauvignon, Ryder", description: "California — Rich, smooth, and powerful at first, carrying hints of mocha along with flavors of cherry and black berries.", price: "$46" },
+      { name: "Rioja Crianza, Bujanda", description: "Rioja SP — Aromas of blackberry with spicy tones (clove and cinnamon), mild tobacco and light balsamic notes.", price: "$45" },
+      { name: "Chianti Classico, Cultusboni", description: "Tuscany IT — Medium body, bright red fruit, notes of ripe cherries, cinnamon and clove, bright finish.", price: "$45" },
+      { name: "Valpolicella Classico Superiore, Zenato", description: "Veneto IT — Ruby red, fleshy aromas of wild berries, blackcurrants, black cherries, and spices, hints of chocolate.", price: "$46" },
+      { name: "Malbec Vista Flores, Catena", description: "Mendoza AR — Dark violet color with black reflections. Dark and red fruit aromas with floral notes of lavender, violet, and mocha; rich with notes of sweet spice.", price: "$45" },
+      { name: "Côtes du Rhône, Kermit Lynch", description: "France — Rich purple, spice box and forest floor nose with robust dark fruits on palate and supple mouthfeel.", price: "$46" },
+      { name: "Pinot Noir", description: "Napa Valley — Made from hand selected grapes, embodying tradition and family heritage.", price: "$45" },
+    ]
+  },
+  {
+    category: "Wine by the Bottle — White Wines",
+    items: [
+      { name: "Pinot Grigio, Zenato", description: "Delle Venezia IT — Pale sunlight color. Soft texture with a hint of cantaloupe and a medium dry finish.", price: "$45" },
+      { name: "Villa Maria Sauvignon Blanc", description: "Marlborough NZ — Overflowing with aromas of gooseberry and passionfruit with hint of lime and nettles.", price: "$46" },
+      { name: "Chardonnay, Black's Station", description: "California — With flavors of melon, mango, and toasty oak, boasts lovely aromas of pineapple and barrel spice.", price: "$45" },
+      { name: "Dr. L Riesling", description: "Mosel DE — A bright, refreshing, fruit-driven wine, with a juicy mid-palate and a crisp, drying finish.", price: "$44" },
+      { name: "Grüner Veltliner, Stadt Krems", description: "Kremstal AT — Savory aromas, spicy flavors, and good acidity. Fresh tasting with notes of green apple, lemon, radish, arugula.", price: "$46" },
+    ]
+  },
+  {
+    category: "Wine by the Bottle — Rosé & Bubbles",
+    items: [
+      { name: "Rosé, Mont Gravet", description: "Languedoc FR — Light pink color and aromas of strawberries and raspberries. Fresh and harmonious on the palate, long lasting fruit flavors.", price: "$42" },
+      { name: "Zardetto Spumante", description: "Veneto IT — Brilliant straw-yellow in color with a delicate pelage, with notes of pears, apples, and peaches with a hint of wildflowers.", price: "$42" },
+    ]
+  },
+  {
+    category: "Reserve Wines — Red",
+    items: [
+      { name: "Château Beau-Site", description: "Château FR — Dark ruby red with aromas of tobacco leaf, leather, and blackcurrant. The palate is savory and herbal with an earthy minerality.", price: "$80" },
+      { name: "Bordeaux Rouge, Beau Rivage", description: "Bordeaux FR — Ruby with violet reflections, fragrant blackberry, raspberry, and boysenberry, fruity typicity on the nose.", price: "$45" },
+      { name: "Château Laplagnotte-Bellevue", description: "Bordeaux FR — Blend of Merlot and Cabernet Franc, fruit-driven with deep plum and ruby hue, aromas of black currant, black cherry, licorice, and graphite.", price: "$60" },
+      { name: "Château Gaudin", description: "Pauillac FR — Aromas of cider, ripe berries, and cherries. Blackcurrant touches of vanilla and leather. Softens with age.", price: "$70" },
+      { name: "Châteauneuf Du Pape Rouge, Domaine De La Solitude", description: "France — Bouquet nose of garrigue, flowers of cistus, blackcurrant buds. Mouth full of freshness and balanced with aromas of cocoa and morello cherry.", price: "$85" },
+    ]
+  },
+  {
+    category: "Half Bottles",
+    items: [
+      { name: "Cabernet Sauvignon, Textbook", description: "Napa Valley CA — Aromas of anise, blueberry, dried cranberry, and sage. Palate includes blackberry jam and mocha. Rich and full-bodied with a long finish.", price: "$30" },
+      { name: "Pinot Noir, King Estate", description: "Willamette Valley OR — Deep garnet, aromas of fresh fruits, mocha, toast, clove, graphite, and tea. Soft and bright entrance.", price: "$30" },
+    ]
+  },
+  {
+    category: "Bourbon / Rye / Whiskey",
+    items: [
+      { name: "Old Crow", description: "", price: "$12" },
+      { name: "Jack Daniels", description: "", price: "$13" },
+      { name: "Woodford Reserve", description: "", price: "$15" },
+      { name: "Maker's Mark", description: "", price: "$15" },
+      { name: "Jameson", description: "", price: "$15" },
+      { name: "Bulleit Rye", description: "", price: "$15" },
+    ]
+  },
+  {
+    category: "Blended & Single Malt Scotch",
+    items: [
+      { name: "Johnnie Walker Black 12 Yrs", description: "Blended Scotch", price: "$15" },
+      { name: "Macallan 12 Yrs", description: "Single Malt", price: "$16" },
+      { name: "Glenfiddich 12 Yrs", description: "Single Malt", price: "$16" },
+      { name: "Glenlivet 12 Yrs", description: "Single Malt", price: "$16" },
+    ]
+  },
+  {
+    category: "Tequila",
+    items: [
+      { name: "Jose Cuervo", description: "Silver/Gold", price: "$11" },
+      { name: "Partida", description: "", price: "$12" },
+      { name: "Herradura", description: "", price: "$14" },
+      { name: "Don Julio Blanco", description: "", price: "$15" },
+      { name: "Silver Patrón", description: "", price: "$15" },
+    ]
+  },
+  {
+    category: "Gin",
+    items: [
+      { name: "Hendrick's", description: "", price: "$13" },
+      { name: "Bombay Sapphire", description: "", price: "$13" },
+      { name: "Tanqueray", description: "", price: "$13" },
+      { name: "Beefeater", description: "", price: "$13" },
+    ]
+  },
+  {
+    category: "Vodka",
+    items: [
+      { name: "Tito's", description: "", price: "$13" },
+      { name: "Ketel One", description: "", price: "$14" },
+      { name: "Ketel One Citroen", description: "", price: "$14" },
+      { name: "Absolut", description: "", price: "$14" },
+      { name: "Grey Goose", description: "", price: "$15" },
+    ]
+  },
+  {
+    category: "Rum",
+    items: [
+      { name: "Bacardi", description: "", price: "$12" },
+      { name: "Captain Morgan", description: "", price: "$12" },
+    ]
+  },
+  {
+    category: "Cognac",
+    items: [
+      { name: "Hennessy VSOP", description: "", price: "$16" },
+    ]
+  },
+  {
+    category: "Liqueurs",
+    items: [
+      { name: "Baileys", description: "", price: "$10" },
+      { name: "St Germain", description: "", price: "$10" },
+      { name: "Domaine de Canton", description: "", price: "$10" },
+      { name: "Amaro Lucano", description: "", price: "$10" },
+      { name: "Peach Blossom", description: "", price: "$10" },
+      { name: "Sour Apple", description: "", price: "$10" },
+      { name: "Blue Curaçao", description: "", price: "$10" },
+      { name: "Campari", description: "", price: "$10" },
     ]
   },
   {
     category: "Beer",
     items: [
-      { name: "Kingfisher", description: "Indian Lager", price: "$7" },
-      { name: "Taj Mahal", description: "Indian Lager", price: "$7" },
-      { name: "Corona", description: "Mexican Lager", price: "$7" },
-      { name: "Heineken", description: "Dutch Lager", price: "$7" },
-      { name: "Stella Artois", description: "Belgian Lager", price: "$7" },
+      { name: "Taj Mahal", description: "650ml", price: "$12" },
+      { name: "Kingfisher", description: "", price: "$8" },
+      { name: "Stella", description: "", price: "$8" },
+      { name: "Non-Alcoholic Beer", description: "", price: "$8" },
     ]
   },
   {
-    category: "Spirits",
+    category: "Dessert Wine",
     items: [
-      { name: "Vodka", description: "Tito's, Grey Goose, Ketel One", price: "$10-$14" },
-      { name: "Gin", description: "Tanqueray, Bombay Sapphire, Hendrick's", price: "$10-$14" },
-      { name: "Rum", description: "Bacardi, Captain Morgan, Myers's", price: "$10-$14" },
-      { name: "Whiskey", description: "Jack Daniel's, Jameson, Johnnie Walker", price: "$10-$14" },
-      { name: "Tequila", description: "Jose Cuervo, Patron, Don Julio", price: "$10-$14" },
+      { name: "Vietti Moscato d'Asti", description: "Taste of juicy yellow fruits (pears, apricots, and peaches) with a strong floral scent (rose petals)", price: "$8" },
     ]
   },
 ];

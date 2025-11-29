@@ -179,7 +179,8 @@ const takeOutMenu = [
       { id: "shrimp-curry", name: "Shrimp Curry", description: "Shrimp cooked in traditional Indian style curry.", price: 23.95, image: null },
       { id: "shrimp-korma", name: "Shrimp Korma", description: "Roasted cashew nut, raisin, golden fried onion, mix fruits, saffron and spices.", price: 23.95, image: null },
       { id: "shrimp-saag", name: "Shrimp Saag", description: "Onions, tomatoes with fresh sautéed spinach with ginger & garlic.", price: 23.95, image: null },
-      { id: "shrimp-salmon-vindaloo", name: "Shrimp/Salmon Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 23.95, image: null },
+      { id: "shrimp-vindaloo", name: "Shrimp Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 23.95, image: null },
+      { id: "salmon-vindaloo", name: "Salmon Vindaloo", description: "Freshly ground spices, whole dry chili, toddy vinegar.", price: 23.95, image: null },
       { id: "shrimp-tikka-masala", name: "Shrimp Tikka Masala", description: "Grilled marinated shrimp in a creamy tomato fenugreek sauce.", price: 23.95, image: null },
     ]
   },
@@ -256,7 +257,8 @@ const takeOutMenu = [
       { id: "mango-chutney", name: "Mango Chutney", description: "A blend of ripe mangoes, sugar, and select spices", price: 4.95, image: null },
       { id: "raita", name: "Raita", description: "Yogurt with carrots & Cucumbers and spices", price: 4.95, image: null },
       { id: "jeera-aloo", name: "Jeera Aloo", description: "Cumin Flavored Potatoes.", price: 9.95, image: null },
-      { id: "om-daal-side", name: "Om Daal / Delhi Masala Daal", description: "Mix black lentils with butter or yellow lentils cooked slowly with herbs & spices", price: 9.95, image: null },
+      { id: "om-daal-side", name: "Om Daal", description: "Mix black lentils cooked with butter and in a fresh tomato sauce", price: 9.95, image: null },
+      { id: "delhi-masala-daal-side", name: "Delhi Masala Daal", description: "Yellow lentils cooked slowly with herbs and spices", price: 9.95, image: null },
     ]
   },
   {
