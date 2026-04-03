@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -42,7 +42,7 @@ model Order {
   customerName  String
   customerPhone String
   type          String      @default("PICKUP") // PICKUP, DELIVERY
-  status        String      @default("NEW") // NEW, PENDING_PAYMENT, PAID, PAYMENT_FAILED, SUBMITTED, COMPLETED, CANCELLED
+  status        String      @default("NEW") // NEW, PENDING_PAYMENT, PAID, IN_PROGRESS, READY, COMPLETED, CANCELLED, PAYMENT_FAILED
   pickupTime    DateTime?
   notes         String? // Overall order note
   subtotal      Decimal?    // Subtotal before tax/tip

@@ -30,7 +30,7 @@ export default function AboutPage() {
             </p>
 
             <p className="text-xl text-gray-700 leading-relaxed mb-8">
-              We at home strive to create an experience of classic yet unexplored charms of India's various regions. Expertly curated by our Executive Chef.
+              We at home strive to create an experience of classic yet unexplored charms of India&apos;s various regions. Expertly curated by our Executive Chef.
             </p>
 
             <div className="bg-[#1A1A1A] text-white p-8 rounded-2xl my-12">

@@ -1,37 +1,67 @@
-# Getting Started
+# OM Indian Restaurant
 
-## Setup
+Next.js restaurant site with:
+- Stripe Checkout for online payments
+- Prisma + PostgreSQL for order storage
+- Protected restaurant dashboard at `/admin`
 
-1.  **Environment Variables**: Copy `.env.example` (create one based on needed vars) to `.env`
-    *   `TOAST_API_URL` (if available)
-    *   `TOAST_RESTAURANT_GUID` (if available)
-    *   `TOAST_AUTH_TOKEN` (if available)
+## Required environment variables
 
-2.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
+Copy `.env.example` to `.env` and fill in:
+- `DATABASE_URL`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_SITE_URL`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD_HASH`
+- `AUTH_SECRET`
 
-3.  **Database Setup**:
-    ```bash
-    npx prisma migrate dev
-    npx tsx prisma/seed.ts
-    ```
+Generate the admin password hash with:
 
-4.  **Run Development Server**:
-    ```bash
-    npm run dev
-    ```
+```bash
+npm run hash:admin-password -- "replace-with-strong-password"
+```
 
-## Deployment
+## Local setup
 
-1.  Build the project: `npm run build`
-2.  Start: `npm start`
-3.  Ensure database migration is run in production environment.
+```bash
+npm install
+npx prisma migrate deploy
+npm run dev
+```
 
-## Order Flow & Toast Integration
+## Stripe webhook
 
-*   Orders are stored in the local DB first (`Order`, `OrderItem`).
-*   The `OrderDispatcher` (`src/lib/toast/dispatcher.ts`) picks up the new order and sends it to Toast API.
-*   Toast handles printing to the kitchen.
-*   **Fallback**: If Toast fails or is not configured, orders are visible at `/admin` dashboard.
+For local testing, forward Stripe webhooks to:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+Use the webhook secret Stripe gives you for `STRIPE_WEBHOOK_SECRET`.
+
+## Production deploy checklist
+
+1. Create a hosted PostgreSQL database.
+2. Set all production environment variables in Vercel.
+3. Run Prisma migrations against production:
+
+```bash
+npx prisma migrate deploy
+```
+
+4. In Stripe, set the production webhook endpoint to:
+
+```text
+https://your-domain.com/api/stripe/webhook
+```
+
+5. Give restaurant staff the `/admin/login` credentials.
+
+## Security notes
+
+- Card details are collected only on Stripe-hosted checkout.
+- The app uses a signed, HTTP-only admin session cookie.
+- `/admin` is protected by middleware.
+- The legacy unpaid order endpoint has been disabled.
+- Order totals are recalculated on the server from a trusted menu catalog.

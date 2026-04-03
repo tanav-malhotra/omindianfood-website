@@ -80,7 +80,7 @@ export default function Home() {
                   <span className="text-[#C41E3A] font-semibold">OM</span> prides itself on creating a distinct, regional elegance from both popular and nostalgic Indian food traditions.
                 </p>
                 <p>
-                  We at home strive to create an experience of classic yet unexplored charms of India's various regions. Expertly curated by our Executive Chef.
+                  We at home strive to create an experience of classic yet unexplored charms of India&apos;s various regions. Expertly curated by our Executive Chef.
                 </p>
               </div>
               <Link 

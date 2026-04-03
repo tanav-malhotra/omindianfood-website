@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
 type MenuItem = {
@@ -85,7 +85,7 @@ interface OrderInterfaceProps {
 }
 
 export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, cateringMenu, omSpecialMenu }: OrderInterfaceProps) {
-  const { items, addItem, removeItem, updateItem, total, clearCart } = useCart();
+  const { items, addItem, removeItem, updateItem, total } = useCart();
   const searchParams = useSearchParams();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [selectedItemOption, setSelectedItemOption] = useState<string | null>(null);
@@ -179,10 +179,6 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   const [tipPercent, setTipPercent] = useState<number | 'custom'>(0);
   const [customTip, setCustomTip] = useState('');
   const [customTipType, setCustomTipType] = useState<'$' | '%'>('$'); // $ or %
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [cardZip, setCardZip] = useState('');
   const [paymentError, setPaymentError] = useState('');
   
   // Scheduling State (required for catering orders)
@@ -229,8 +225,6 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
     : subtotal * (tipPercent / 100);
   const grandTotal = subtotal + taxAmount + tipAmount;
   
-  const router = useRouter();
-
   const menuTypes: { id: MenuType; label: string }[] = [
     { id: "takeout", label: "Take Out" },
     { id: "catering", label: "Catering" },
@@ -295,27 +289,6 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
     setSelectedItemOption(null);
   };
 
-  // Format card number with spaces
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    return parts.length ? parts.join(' ') : value;
-  };
-
-  // Format expiry as MM/YY
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
-    }
-    return v;
-  };
-
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
@@ -338,42 +311,10 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
       }
     }
     
-    // Validate card details
-    const cleanCardNumber = cardNumber.replace(/\s/g, '');
-    if (cleanCardNumber.length < 15) {
-      setPaymentError('Please enter a valid card number');
-      return;
-    }
-    
-    const [expMonth, expYear] = cardExpiry.split('/');
-    if (!expMonth || !expYear || expMonth.length !== 2 || expYear.length !== 2) {
-      setPaymentError('Please enter a valid expiry date (MM/YY)');
-      return;
-    }
-    
-    if (cardCvv.length < 3) {
-      setPaymentError('Please enter a valid CVV');
-      return;
-    }
-    
-    if (cardZip.length < 5) {
-      setPaymentError('Please enter a valid ZIP code');
-      return;
-    }
-
     setIsSubmitting(true);
     setPaymentError('');
     
     try {
-      // Create a simple token (in production, Toast's JS SDK would handle this securely)
-      const cardToken = btoa(JSON.stringify({
-        number: cleanCardNumber,
-        expMonth,
-        expYear: '20' + expYear,
-        cvv: cardCvv,
-        zip: cardZip
-      }));
-
       const orderData = {
         customerName,
         customerPhone,
@@ -381,16 +322,10 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
         notes: orderNote,
         items: items.map(i => ({
           menuItemId: i.menuItemId,
-          name: i.name,
-          price: i.price,
           quantity: i.quantity,
           note: i.note
         })),
-        subtotal,
-        tax: taxAmount,
         tip: tipAmount,
-        total: grandTotal,
-        cardToken,
         deliveryAddress: orderType === 'DELIVERY' ? {
           street: deliveryAddress,
           apt: deliveryApt,
@@ -414,19 +349,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
         throw new Error(data.error || 'Payment failed');
       }
       
-      clearCart();
-      // Reset form
-      setCustomerName('');
-      setCustomerPhone('');
-      setCardNumber('');
-      setCardExpiry('');
-      setCardCvv('');
-      setCardZip('');
-      setTipPercent(0);
-      setCustomTip('');
-      
-      alert(`Order placed successfully! Your order #${data.orderId.slice(0,8).toUpperCase()} is being prepared.\n\n${orderType === 'PICKUP' ? 'We\'ll have it ready for pickup shortly!' : 'It will be delivered to your address soon!'}`);
-      router.push('/');
+      window.location.href = data.checkoutUrl;
     } catch (err) {
       console.error(err);
       setPaymentError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
@@ -671,7 +594,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                     <div key={item.id} className="flex justify-between text-sm py-2 border-b border-gray-100">
                       <div>
                         <span className="font-medium">{item.quantity}x {item.name}</span>
-                        {item.note && <p className="text-gray-500 text-xs mt-0.5">"{item.note}"</p>}
+                        {item.note && <p className="text-gray-500 text-xs mt-0.5">&quot;{item.note}&quot;</p>}
                       </div>
                       <span className="text-gray-700">${(item.price * item.quantity).toFixed(2)}</span>
                     </div>
@@ -780,84 +703,29 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                 )}
               </div>
               
-              {/* Payment Information */}
               <div className="border-t pt-5">
                 <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                   </svg>
-                  Payment Details
+                  Secure Checkout
                 </h3>
-                
+
                 {paymentError && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                     {paymentError}
                   </div>
                 )}
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Card Number *</label>
-                    <input 
-                      required 
-                      type="text" 
-                      inputMode="numeric"
-                      value={cardNumber} 
-                      onChange={e => setCardNumber(formatCardNumber(e.target.value))}
-                      maxLength={19}
-                      className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent transition-all"
-                      placeholder="1234 5678 9012 3456"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Expiry *</label>
-                      <input 
-                        required 
-                        type="text" 
-                        inputMode="numeric"
-                        value={cardExpiry} 
-                        onChange={e => setCardExpiry(formatExpiry(e.target.value))}
-                        maxLength={5}
-                        className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
-                        placeholder="MM/YY"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">CVV *</label>
-                      <input 
-                        required 
-                        type="text" 
-                        inputMode="numeric"
-                        value={cardCvv} 
-                        onChange={e => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                        maxLength={4}
-                        className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
-                        placeholder="123"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">ZIP *</label>
-                      <input 
-                        required 
-                        type="text" 
-                        inputMode="numeric"
-                        value={cardZip} 
-                        onChange={e => setCardZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
-                        maxLength={5}
-                        className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
-                        placeholder="10028"
-                      />
-                    </div>
-                  </div>
+
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+                  When you submit this form, you will be redirected to Stripe&apos;s hosted checkout page to enter card details securely.
                 </div>
-                
+
                 <div className="flex items-center gap-2 mt-4 text-xs text-gray-500">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Your payment information is secure and encrypted
+                  Card details are collected by Stripe and never touch this site.
                 </div>
               </div>
               
@@ -872,16 +740,14 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Processing Payment...
+                    Redirecting to Stripe...
                   </span>
                 ) : (
-                  `Pay $${grandTotal.toFixed(2)}`
+                  `Continue to Secure Checkout • $${grandTotal.toFixed(2)}`
                 )}
               </button>
               
-              <div className="flex items-center justify-center gap-4 pt-2">
-                <img src="https://cdn.jsdelivr.net/gh/atomi):labs/cryptocurrency-icons@master/svg/color/visa.svg" alt="Visa" className="h-6 opacity-60" onError={(e) => e.currentTarget.style.display = 'none'} />
-                <img src="https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/svg/color/mastercard.svg" alt="Mastercard" className="h-6 opacity-60" onError={(e) => e.currentTarget.style.display = 'none'} />
+              <div className="flex items-center justify-center pt-2">
                 <span className="text-xs text-gray-400">Visa • Mastercard • Amex • Discover</span>
               </div>
             </form>
@@ -1162,7 +1028,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                                 ? `, Bread: ${omSpecialBreadUpgrade.split(' (')[0]}` 
                                 : '';
                               addItem({
-                                menuItemId: `om-special-${Date.now()}`,
+                                menuItemId: 'om-special',
                                 name: 'OM Special',
                                 price: 18.95 + breadUpgradePrice,
                                 quantity: 1,
@@ -1361,7 +1227,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                           <span className="text-gray-700 font-semibold text-sm">${(cartItem.price * cartItem.quantity).toFixed(2)}</span>
                         </div>
                         {cartItem.note && (
-                          <p className="text-xs text-gray-500 italic mb-2 bg-white px-2 py-1 rounded">"{cartItem.note}"</p>
+                          <p className="text-xs text-gray-500 italic mb-2 bg-white px-2 py-1 rounded">&quot;{cartItem.note}&quot;</p>
                         )}
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-200">
@@ -1513,7 +1379,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                           <span className="text-[#C41E3A] font-bold">${(cartItem.price * cartItem.quantity).toFixed(2)}</span>
                         </div>
                         {cartItem.note && (
-                          <p className="text-xs text-gray-500 italic mb-3 bg-white px-3 py-2 rounded-lg border border-gray-100">"{cartItem.note}"</p>
+                          <p className="text-xs text-gray-500 italic mb-3 bg-white px-3 py-2 rounded-lg border border-gray-100">&quot;{cartItem.note}&quot;</p>
                         )}
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-1 bg-white rounded-lg border border-gray-200">
