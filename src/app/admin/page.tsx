@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { AdminDashboardControls } from "./AdminDashboardControls";
 
 export const metadata: Metadata = {
-  title: 'Kitchen Dashboard - OM Indian Restaurant',
+  title: 'Kitchen Dashboard — OM Indian Restaurant',
   robots: {
     index: false,
     follow: false,
@@ -21,10 +21,16 @@ const STATUS_STYLES: Record<string, string> = {
   PAID: 'bg-sky-100 text-sky-800 ring-1 ring-sky-200',
   IN_PROGRESS: 'bg-amber-100 text-amber-900 ring-1 ring-amber-200',
   READY: 'bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200',
-  COMPLETED: 'bg-stone-200 text-stone-800 ring-1 ring-stone-300',
+  COMPLETED: 'bg-stone-200 text-stone-700 ring-1 ring-stone-300',
   CANCELLED: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200',
-  PENDING_PAYMENT: 'bg-yellow-100 text-yellow-800 ring-1 ring-yellow-200',
-  PAYMENT_FAILED: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  PAID: 'Paid',
+  IN_PROGRESS: 'In Progress',
+  READY: 'Ready',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
 };
 
 type AdminPageProps = {
@@ -43,21 +49,14 @@ function fuzzyMatch(query: string, value: string) {
   const normalizedQuery = normalizeSearchValue(query);
   const normalizedValue = normalizeSearchValue(value);
 
-  if (!normalizedQuery) {
-    return true;
-  }
-
-  if (normalizedValue.includes(normalizedQuery)) {
-    return true;
-  }
+  if (!normalizedQuery) return true;
+  if (normalizedValue.includes(normalizedQuery)) return true;
 
   let queryIndex = 0;
   for (const character of normalizedValue) {
     if (character === normalizedQuery[queryIndex]) {
       queryIndex += 1;
-      if (queryIndex === normalizedQuery.length) {
-        return true;
-      }
+      if (queryIndex === normalizedQuery.length) return true;
     }
   }
 
@@ -74,7 +73,6 @@ function orderMatchesQuery(order: any, query: string) {
     order.id,
     ...order.items.map((item: any) => `${item.name} ${item.note || ''}`),
   ];
-
   return haystacks.some((value) => fuzzyMatch(query, String(value)));
 }
 
@@ -84,12 +82,12 @@ function getNextActions(status: string, orderType: string) {
       return [{ label: 'Start Preparing', status: 'IN_PROGRESS', className: 'bg-amber-600 hover:bg-amber-700' }];
     case 'IN_PROGRESS':
       return [{
-        label: orderType === 'DELIVERY' ? 'Mark Out For Delivery' : 'Mark Ready',
+        label: orderType === 'DELIVERY' ? 'Out for Delivery' : 'Mark Ready',
         status: 'READY',
         className: 'bg-emerald-600 hover:bg-emerald-700',
       }];
     case 'READY':
-      return [{ label: 'Mark Completed', status: 'COMPLETED', className: 'bg-stone-800 hover:bg-black' }];
+      return [{ label: 'Mark Completed', status: 'COMPLETED', className: 'bg-stone-800 hover:bg-stone-950' }];
     default:
       return [];
   }
@@ -116,11 +114,7 @@ export const dynamic = 'force-dynamic';
 async function requireAdminSession() {
   const token = (await cookies()).get(getSessionCookieName())?.value;
   const session = verifySessionToken(token);
-
-  if (!session) {
-    redirect("/admin/login");
-  }
-
+  if (!session) redirect("/admin/login");
   return session;
 }
 
@@ -128,86 +122,109 @@ function formatCurrency(value: number | null | undefined) {
   return `$${Number(value || 0).toFixed(2)}`;
 }
 
+function formatTime(dateString: string | Date) {
+  return new Date(dateString).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+function formatDate(dateString: string | Date) {
+  return new Date(dateString).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
 function renderOrderCard(order: any) {
+  const nextActions = getNextActions(order.status, order.type);
+  const totalItems = order.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+
   return (
     <article
       key={order.id}
-      className="overflow-hidden rounded-[1.5rem] border border-stone-200 bg-white shadow-[0_18px_60px_-30px_rgba(26,26,26,0.35)]"
+      className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
     >
-      <div className="border-b border-stone-200 bg-gradient-to-r from-stone-950 via-stone-900 to-[#4b1821] px-6 py-5 text-white">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h3 className="text-2xl font-bold tracking-tight">
-                #{order.id.slice(0, 8).toUpperCase()} • {order.customerName}
-              </h3>
-              <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${STATUS_STYLES[order.status] || 'bg-stone-100 text-stone-700'}`}>
-                {order.status.replace('_', ' ')}
-              </span>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-stone-300">
-              <span>{order.type === 'DELIVERY' ? 'Delivery' : 'Pickup'}</span>
-              <span>{order.customerPhone}</span>
-              <span>{new Date(order.createdAt).toLocaleString()}</span>
-              {order.pickupTime ? <span>Scheduled {new Date(order.pickupTime).toLocaleString()}</span> : null}
-            </div>
+      {/* Card Header */}
+      <div className="flex items-start justify-between gap-4 border-b border-stone-100 bg-[#1A1A1A] px-5 py-4 text-white">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="font-mono text-xs text-stone-400">#{order.id.slice(0, 8).toUpperCase()}</span>
+            <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[order.status] || 'bg-stone-100 text-stone-700'}`}>
+              {STATUS_LABELS[order.status] ?? order.status.replace('_', ' ')}
+            </span>
           </div>
-          <div className="text-left lg:text-right">
-            <p className="text-xs uppercase tracking-[0.25em] text-stone-400">Order Total</p>
-            <p className="mt-1 text-3xl font-bold text-[#D4AF37]">{formatCurrency(Number(order.total))}</p>
-            <p className="mt-2 text-sm text-stone-300">
-              Subtotal {formatCurrency(Number(order.subtotal))} • Tax {formatCurrency(Number(order.tax))} • Tip {formatCurrency(Number(order.tip))}
-            </p>
+          <h3 className="mt-1.5 text-xl font-bold tracking-tight">{order.customerName}</h3>
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-400">
+            <span>{order.type === 'DELIVERY' ? '🛵 Delivery' : '🛍 Pickup'}</span>
+            <span>{order.customerPhone}</span>
+            <span>{formatDate(order.createdAt)} at {formatTime(order.createdAt)}</span>
+            {order.pickupTime ? (
+              <span className="text-[#D4AF37]">Scheduled {formatTime(order.pickupTime)}</span>
+            ) : null}
           </div>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-2xl font-bold text-[#D4AF37]">{formatCurrency(Number(order.total))}</p>
+          <p className="mt-0.5 text-xs text-stone-500">
+            {totalItems} item{totalItems !== 1 ? 's' : ''}
+          </p>
         </div>
       </div>
 
-      <div className="grid gap-6 px-6 py-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <div>
-          <div className="mb-4 flex items-center justify-between">
-            <h4 className="text-lg font-semibold text-stone-900">Items</h4>
-            <p className="text-sm text-stone-500">
-              {order.items.reduce((sum: number, item: any) => sum + item.quantity, 0)} item{order.items.length === 1 ? '' : 's'}
-            </p>
-          </div>
-          <div className="space-y-3">
+      {/* Card Body */}
+      <div className="px-5 py-5">
+        <div className="grid gap-5 lg:grid-cols-[1fr_auto]">
+          {/* Items */}
+          <div className="space-y-2">
             {order.items.map((item: any) => (
-              <div key={item.id} className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-semibold text-stone-900">{item.quantity}x {item.name}</p>
-                    {item.note ? <p className="mt-1 text-sm text-[#8a2437]">Note: {item.note}</p> : null}
-                  </div>
-                  <p className="font-semibold text-stone-700">{formatCurrency(Number(item.price) * item.quantity)}</p>
+              <div key={item.id} className="flex items-start justify-between gap-4 rounded-xl bg-stone-50 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-stone-900">
+                    <span className="mr-2 text-[#C41E3A]">{item.quantity}×</span>
+                    {item.name}
+                  </p>
+                  {item.note ? (
+                    <p className="mt-0.5 text-sm text-amber-700">
+                      <span className="font-medium">Note:</span> {item.note}
+                    </p>
+                  ) : null}
                 </div>
+                <p className="shrink-0 text-sm font-semibold text-stone-600">
+                  {formatCurrency(Number(item.price) * item.quantity)}
+                </p>
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Customer</h4>
-            <p className="mt-3 text-lg font-semibold text-stone-900">{order.customerName}</p>
-            <p className="mt-1 text-stone-700">{order.customerPhone}</p>
-            {order.transactionId ? (
-              <p className="mt-3 text-xs text-stone-500">Payment ref: {order.transactionId}</p>
+          {/* Right side: notes + actions */}
+          <div className="flex flex-col gap-3 lg:w-64">
+            {order.notes ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-amber-700">Kitchen Notes</p>
+                <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-stone-800">{order.notes}</p>
+              </div>
             ) : null}
-          </div>
 
-          {order.notes ? (
-            <div className="rounded-2xl border border-[#e8d7ab] bg-[#fff6df] p-4">
-              <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8c6820]">Kitchen Notes</h4>
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-stone-800">{order.notes}</p>
+            {order.transactionId ? (
+              <p className="text-xs text-stone-400">
+                Payment ref: <span className="font-mono">{order.transactionId.slice(0, 16)}…</span>
+              </p>
+            ) : null}
+
+            {/* Pricing breakdown */}
+            <div className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-600">
+              <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(Number(order.subtotal))}</span></div>
+              <div className="flex justify-between"><span>Tax</span><span>{formatCurrency(Number(order.tax))}</span></div>
+              {Number(order.tip) > 0 ? (
+                <div className="flex justify-between"><span>Tip</span><span>{formatCurrency(Number(order.tip))}</span></div>
+              ) : null}
+              <div className="mt-1.5 flex justify-between border-t border-stone-200 pt-1.5 font-semibold text-stone-900">
+                <span>Total</span><span>{formatCurrency(Number(order.total))}</span>
+              </div>
             </div>
-          ) : null}
 
-          <div className="rounded-2xl border border-stone-200 bg-white p-4">
-            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Actions</h4>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {getNextActions(order.status, order.type).map((action) => (
+            {/* Actions */}
+            <div className="flex flex-wrap gap-2">
+              {nextActions.map((action) => (
                 <form key={action.status} action={updateStatus.bind(null, order.id, action.status)}>
-                  <button className={`${action.className} rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors`}>
+                  <button
+                    className={`${action.className} rounded-full px-4 py-2 text-sm font-semibold text-white transition-colors`}
+                  >
                     {action.label}
                   </button>
                 </form>
@@ -215,7 +232,7 @@ function renderOrderCard(order: any) {
               {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' ? (
                 <form action={updateStatus.bind(null, order.id, 'CANCELLED')}>
                   <button className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose-700">
-                    Cancel Order
+                    Cancel
                   </button>
                 </form>
               ) : null}
@@ -255,148 +272,145 @@ export default async function AdminDashboard({ searchParams }: AdminPageProps) {
     const matchesType = typeFilter !== 'ALL' ? order.type === typeFilter : true;
     return matchesQuery && matchesStatus && matchesType;
   });
+
   const activeOrders = filteredOrders.filter((order) => ACTIVE_STATUSES.includes(order.status));
   const completedOrders = filteredOrders.filter((order) => !ACTIVE_STATUSES.includes(order.status));
+  const inKitchenCount = filteredOrders.filter((order) => order.status === 'IN_PROGRESS').length;
+  const readyCount = filteredOrders.filter((order) => order.status === 'READY').length;
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.12),_transparent_22%),linear-gradient(180deg,#f7f1e5_0%,#efe5d0_40%,#f5f5f0_100%)] px-4 py-8 md:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white/85 shadow-[0_30px_120px_-45px_rgba(26,26,26,0.45)] backdrop-blur">
-          <div className="border-b border-stone-200 bg-[#13100f] px-6 py-8 text-white md:px-10">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]">OM Operations</p>
-                <h1 className="mt-3 text-4xl font-bold tracking-tight">Kitchen Dashboard</h1>
-                <p className="mt-3 max-w-2xl text-sm text-stone-300 md:text-base">
-                  Live service view for incoming orders, prep status, and pickup or delivery handoff.
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <form action="/api/auth/logout" method="post">
-                  <button className="rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20">
-                    Sign Out
-                  </button>
-                </form>
-              </div>
-            </div>
+    <div className="min-h-screen bg-stone-100 px-4 py-0">
+      {/* Page Header */}
+      <div className="border-b border-stone-800 bg-[#1A1A1A] px-6 py-6 md:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">OM Operations</p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-white">Kitchen Dashboard</h1>
           </div>
+          <div className="flex items-center gap-3">
+            <form action="/api/auth/logout" method="post">
+              <button className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20">
+                Sign Out
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
 
-          <div className="px-6 py-6 md:px-10">
-            <AdminDashboardControls
-              initialQuery={query}
-              initialStatus={statusFilter}
-              initialType={typeFilter}
-              activeOrderCount={activeOrders.length}
-            />
+      <div className="mx-auto max-w-7xl px-0 pb-12 md:px-4">
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 gap-px border-b border-stone-200 bg-stone-200 md:grid-cols-4">
+          <div className="bg-white px-6 py-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Active Orders</p>
+            <p className="mt-2 text-4xl font-bold text-stone-950">{activeOrders.length}</p>
+          </div>
+          <div className="bg-white px-6 py-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">In Kitchen</p>
+            <p className="mt-2 text-4xl font-bold text-amber-600">{inKitchenCount}</p>
+          </div>
+          <div className="bg-white px-6 py-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Ready Now</p>
+            <p className="mt-2 text-4xl font-bold text-emerald-600">{readyCount}</p>
+          </div>
+          <div className="bg-white px-6 py-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Revenue Shown</p>
+            <p className="mt-2 text-4xl font-bold text-stone-950">
+              {formatCurrency(filteredOrders.reduce((sum, order) => sum + Number(order.total), 0))}
+            </p>
+          </div>
+        </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
-                <p className="text-sm uppercase tracking-[0.15em] text-stone-500">Active Orders</p>
-                <p className="mt-3 text-4xl font-bold text-stone-950">{activeOrders.length}</p>
-              </div>
-              <div className="rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
-                <p className="text-sm uppercase tracking-[0.15em] text-stone-500">Ready Now</p>
-                <p className="mt-3 text-4xl font-bold text-emerald-700">
-                  {filteredOrders.filter((order) => order.status === 'READY').length}
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
-                <p className="text-sm uppercase tracking-[0.15em] text-stone-500">Awaiting Payment</p>
-                <p className="mt-3 text-4xl font-bold text-yellow-700">
-                  {filteredOrders.filter((order) => order.status === 'PENDING_PAYMENT').length}
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] border border-stone-200 bg-white p-5 shadow-sm">
-                <p className="text-sm uppercase tracking-[0.15em] text-stone-500">Visible Gross</p>
-                <p className="mt-3 text-4xl font-bold text-stone-950">
-                  {formatCurrency(filteredOrders.reduce((sum, order) => sum + Number(order.total), 0))}
-                </p>
-              </div>
+        {/* Controls */}
+        <div className="border-b border-stone-200 bg-white px-6 py-4 md:px-10">
+          <AdminDashboardControls
+            initialQuery={query}
+            initialStatus={statusFilter}
+            initialType={typeFilter}
+            activeOrderCount={activeOrders.length}
+          />
+        </div>
+
+        <div className="px-4 py-8 md:px-10">
+          {dbError ? (
+            <div className="mb-6 rounded-xl border border-yellow-300 bg-yellow-50 px-5 py-4 text-yellow-900">
+              <strong>Database unavailable.</strong> Orders will appear once the production database is connected.
             </div>
+          ) : null}
 
-            {dbError ? (
-              <div className="mt-6 rounded-2xl border border-yellow-300 bg-yellow-50 px-5 py-4 text-yellow-900">
-                <strong>Database unavailable.</strong> Orders will appear once the production database is connected.
-              </div>
-            ) : null}
-
-            <section className="mt-10">
-              <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-stone-950">Active Service Board</h2>
-                  <p className="text-sm text-stone-500">Paid, in-progress, and ready orders stay at the top.</p>
-                </div>
-                {(query || statusFilter !== 'ALL' || typeFilter !== 'ALL') ? (
-                  <p className="text-sm text-stone-500">
-                    Filters:
-                    {' '}
-                    <span className="font-semibold text-stone-900">
-                      {query || 'all orders'}
-                      {statusFilter !== 'ALL' ? ` • ${statusFilter.toLowerCase().replace('_', ' ')}` : ''}
-                      {typeFilter !== 'ALL' ? ` • ${typeFilter.toLowerCase()}` : ''}
-                    </span>
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="space-y-6">
-                {activeOrders.map(renderOrderCard)}
-                {activeOrders.length === 0 ? (
-                  <div className="rounded-[1.75rem] border border-dashed border-stone-300 bg-white/70 px-6 py-14 text-center">
-                    <p className="text-xl font-semibold text-stone-800">No active orders right now.</p>
-                    <p className="mt-2 text-sm text-stone-500">New paid orders will appear here automatically.</p>
-                  </div>
-                ) : null}
-              </div>
-            </section>
-
-            <section className="mt-12">
-              <div className="mb-5">
-                <h2 className="text-2xl font-bold text-stone-950">Recent History</h2>
-                <p className="text-sm text-stone-500">Completed, cancelled, and payment exception orders.</p>
-              </div>
-
-              <details className="group overflow-hidden rounded-[1.75rem] border border-stone-200 bg-white shadow-sm">
-                <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-left">
-                  <div>
-                    <p className="text-base font-semibold text-stone-900">Show completed and archived orders</p>
-                    <p className="text-sm text-stone-500">{completedOrders.length} order{completedOrders.length === 1 ? '' : 's'} in history</p>
-                  </div>
-                  <span className="rounded-full border border-stone-300 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600 transition group-open:rotate-180">
-                    Expand
+          {/* Active Orders */}
+          <section>
+            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+              <h2 className="text-xl font-bold text-stone-950">
+                Active Orders
+                {activeOrders.length > 0 ? (
+                  <span className="ml-2 rounded-full bg-[#C41E3A] px-2 py-0.5 text-sm font-semibold text-white">
+                    {activeOrders.length}
                   </span>
-                </summary>
+                ) : null}
+              </h2>
+              {(query || statusFilter !== 'ALL' || typeFilter !== 'ALL') ? (
+                <p className="text-sm text-stone-500">
+                  Filtered by{' '}
+                  <span className="font-semibold text-stone-700">
+                    {[query, statusFilter !== 'ALL' && statusFilter, typeFilter !== 'ALL' && typeFilter].filter(Boolean).join(' · ')}
+                  </span>
+                </p>
+              ) : null}
+            </div>
 
-                <div className="grid gap-4 border-t border-stone-200 px-5 py-5">
-                  {completedOrders.map((order) => (
-                    <article key={order.id} className="rounded-[1.5rem] border border-stone-200 bg-[#fcfaf7] px-5 py-4 shadow-sm">
-                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                          <p className="text-lg font-semibold text-stone-900">
-                            #{order.id.slice(0, 8).toUpperCase()} • {order.customerName}
-                          </p>
-                          <p className="mt-1 text-sm text-stone-600">
-                            {order.customerPhone} • {order.type === 'DELIVERY' ? 'Delivery' : 'Pickup'} • {new Date(order.createdAt).toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${STATUS_STYLES[order.status] || 'bg-stone-100 text-stone-700'}`}>
-                            {order.status.replace('_', ' ')}
-                          </span>
-                          <span className="text-lg font-semibold text-stone-900">{formatCurrency(Number(order.total))}</span>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                  {completedOrders.length === 0 ? (
-                    <div className="rounded-[1.5rem] border border-dashed border-stone-300 bg-white/70 px-6 py-10 text-center text-stone-500">
-                      No recent completed or cancelled orders.
-                    </div>
-                  ) : null}
+            <div className="space-y-4">
+              {activeOrders.map(renderOrderCard)}
+              {activeOrders.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-14 text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-stone-100 text-2xl">
+                    🍽
+                  </div>
+                  <p className="font-semibold text-stone-700">No active orders right now</p>
+                  <p className="mt-1 text-sm text-stone-400">New paid orders will appear here automatically.</p>
                 </div>
-              </details>
-            </section>
-          </div>
+              ) : null}
+            </div>
+          </section>
+
+          {/* History */}
+          <section className="mt-10">
+            <h2 className="mb-4 text-xl font-bold text-stone-950">Order History</h2>
+
+            <details className="group overflow-hidden rounded-2xl border border-stone-200 bg-white">
+              <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 hover:bg-stone-50">
+                <div>
+                  <p className="font-semibold text-stone-800">Completed &amp; Cancelled Orders</p>
+                  <p className="text-sm text-stone-500">{completedOrders.length} order{completedOrders.length !== 1 ? 's' : ''}</p>
+                </div>
+                <span className="text-sm font-semibold text-stone-500 transition-transform group-open:rotate-180">▾</span>
+              </summary>
+
+              <div className="space-y-2 border-t border-stone-100 px-5 py-4">
+                {completedOrders.map((order) => (
+                  <div key={order.id} className="flex flex-col gap-2 rounded-xl bg-stone-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="font-semibold text-stone-800">
+                        {order.customerName}
+                        <span className="ml-2 font-mono text-xs text-stone-400">#{order.id.slice(0, 8).toUpperCase()}</span>
+                      </p>
+                      <p className="text-sm text-stone-500">
+                        {order.customerPhone} · {order.type === 'DELIVERY' ? 'Delivery' : 'Pickup'} · {formatDate(order.createdAt)} at {formatTime(order.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[order.status] || 'bg-stone-100 text-stone-700'}`}>
+                        {STATUS_LABELS[order.status] ?? order.status}
+                      </span>
+                      <span className="font-semibold text-stone-800">{formatCurrency(Number(order.total))}</span>
+                    </div>
+                  </div>
+                ))}
+                {completedOrders.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-stone-400">No completed or cancelled orders.</p>
+                ) : null}
+              </div>
+            </details>
+          </section>
         </div>
       </div>
     </div>

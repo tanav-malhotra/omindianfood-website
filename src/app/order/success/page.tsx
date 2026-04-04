@@ -30,7 +30,7 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
         </div>
         <h1 className="text-3xl font-bold text-gray-900">Payment Received</h1>
         <p className="mt-3 text-gray-600">
-          Your order has been submitted successfully. The restaurant can now view it in the protected dashboard.
+          Your order has been confirmed and sent to the kitchen. We'll have it ready for you shortly.
         </p>
         {orderLabel ? (
           <p className="mt-4 rounded-lg bg-stone-100 px-4 py-3 text-sm text-gray-700">
