@@ -752,15 +752,11 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                   </div>
                 )}
 
-                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-                  When you submit this form, you will be redirected to Stripe&apos;s hosted checkout page to enter card details securely.
-                </div>
-
-                <div className="flex items-center gap-2 mt-4 text-xs text-gray-500">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Card details are collected by Stripe and never touch this site.
+                  Secure payment via Stripe
                 </div>
               </div>
               

@@ -226,7 +226,7 @@ function renderOrderCard(order: any) {
               {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' ? (
                 <form action={updateStatus.bind(null, order.id, 'CANCELLED')}>
                   <ConfirmSubmitButton
-                    confirmMessage="Cancel this order? This can't be undone from the dashboard."
+                    confirmMessage="Cancel this order? This can't be undone."
                     className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose-700"
                   >
                     Cancel
