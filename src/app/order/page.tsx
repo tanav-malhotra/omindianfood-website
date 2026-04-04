@@ -1,4 +1,5 @@
 import OrderInterface from '@/components/OrderInterface';
+import OrderingMaintenanceModal from '@/components/OrderingMaintenanceModal';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import { Suspense } from 'react';
@@ -525,6 +526,8 @@ export default function OrderPage() {
           omSpecialMenu={omSpecialMenu}
         />
       </Suspense>
+
+      <OrderingMaintenanceModal />
     </div>
   );
 }

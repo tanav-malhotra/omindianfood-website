@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import MenuDisplay from '@/components/MenuDisplay';
+import OrderingMaintenanceModal from '@/components/OrderingMaintenanceModal';
 
 export const metadata: Metadata = {
   title: 'Menu - OM Indian Restaurant',
@@ -675,6 +676,8 @@ export default function MenuPage() {
           </div>
         </div>
       </div>
+
+      <OrderingMaintenanceModal allowDismiss />
     </div>
   );
 }
