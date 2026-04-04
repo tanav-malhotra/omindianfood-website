@@ -1,7 +1,10 @@
-import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
-import type { Metadata } from 'next';
-import { AdminDashboardControls } from './AdminDashboardControls';
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { getSessionCookieName, verifySessionToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { AdminDashboardControls } from "./AdminDashboardControls";
 
 export const metadata: Metadata = {
   title: 'Kitchen Dashboard - OM Indian Restaurant',
@@ -95,6 +98,8 @@ function getNextActions(status: string, orderType: string) {
 async function updateStatus(orderId: string, newStatus: string) {
   "use server";
 
+  await requireAdminSession();
+
   if (!STATUS_OPTIONS.includes(newStatus as (typeof STATUS_OPTIONS)[number])) {
     throw new Error('Invalid order status.');
   }
@@ -107,6 +112,17 @@ async function updateStatus(orderId: string, newStatus: string) {
 }
 
 export const dynamic = 'force-dynamic';
+
+async function requireAdminSession() {
+  const token = (await cookies()).get(getSessionCookieName())?.value;
+  const session = verifySessionToken(token);
+
+  if (!session) {
+    redirect("/admin/login");
+  }
+
+  return session;
+}
 
 function formatCurrency(value: number | null | undefined) {
   return `$${Number(value || 0).toFixed(2)}`;
@@ -212,6 +228,8 @@ function renderOrderCard(order: any) {
 }
 
 export default async function AdminDashboard({ searchParams }: AdminPageProps) {
+  await requireAdminSession();
+
   const resolvedSearchParams = await searchParams;
   const query = resolvedSearchParams.q?.trim() || '';
   const statusFilter = resolvedSearchParams.status?.trim() || 'ALL';
