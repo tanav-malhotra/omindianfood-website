@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeOrderItems } from "@/lib/order-pricing";
 import { getBaseUrl, getStripe } from "@/lib/stripe";
+import { parseRestaurantLocalDateTime } from "@/lib/timezone";
 
 export const runtime = "nodejs";
 
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
         );
       }
 
-      scheduledFor = new Date(scheduledDateTime);
+      scheduledFor = parseRestaurantLocalDateTime(scheduledDateTime);
       const minScheduledTime = new Date(Date.now() + 1000 * 60 * 60 * 24);
       if (Number.isNaN(scheduledFor.getTime()) || scheduledFor < minScheduledTime) {
         return NextResponse.json(

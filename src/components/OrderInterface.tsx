@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { parseRestaurantLocalDateTime } from '@/lib/timezone';
 
 type MenuItem = {
   id: string;
@@ -184,6 +185,7 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   // Scheduling State (required for catering orders)
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const previousHasCateringItemsRef = useRef(false);
   
   // Check if cart has catering items or take out items
   const hasCateringItems = items.some(item => item.menuItemId?.startsWith('catering-'));
@@ -209,6 +211,26 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   
   // Check if catering delivery minimum is met
   const cateringDeliveryAllowed = !hasCateringItems || subtotal >= CATERING_DELIVERY_MINIMUM;
+
+  const cateringScheduledDateTime =
+    hasCateringItems && scheduledDate && scheduledTime
+      ? parseRestaurantLocalDateTime(`${scheduledDate}T${scheduledTime}`)
+      : null;
+
+  const cateringMinimumDateTime = new Date();
+  cateringMinimumDateTime.setHours(cateringMinimumDateTime.getHours() + 24);
+
+  const hasValidCateringSchedule =
+    !hasCateringItems ||
+    Boolean(
+      cateringScheduledDateTime &&
+      !Number.isNaN(cateringScheduledDateTime.getTime()) &&
+      cateringScheduledDateTime >= cateringMinimumDateTime,
+    );
+
+  const missingCateringSchedule = hasCateringItems && (!scheduledDate || !scheduledTime);
+  const disableCheckout =
+    isSubmitting || (hasCateringItems && (!hasValidCateringSchedule || missingCateringSchedule));
   
   // Auto-switch to pickup if catering delivery minimum is not met
   useEffect(() => {
@@ -216,6 +238,14 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
       setOrderType('PICKUP');
     }
   }, [hasCateringItems, cateringDeliveryAllowed, orderType]);
+
+  useEffect(() => {
+    if (hasCateringItems && !previousHasCateringItemsRef.current && cateringDeliveryAllowed) {
+      setOrderType('DELIVERY');
+    }
+
+    previousHasCateringItemsRef.current = hasCateringItems;
+  }, [hasCateringItems, cateringDeliveryAllowed]);
   
   const taxAmount = subtotal * TAX_RATE;
   const tipAmount = tipPercent === 'custom' 
@@ -301,11 +331,11 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
       }
       
       // Verify the scheduled time is at least 24 hours from now
-      const scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
+      const scheduledDateTime = parseRestaurantLocalDateTime(`${scheduledDate}T${scheduledTime}`);
       const minDateTime = new Date();
       minDateTime.setHours(minDateTime.getHours() + 24);
-      
-      if (scheduledDateTime < minDateTime) {
+
+      if (Number.isNaN(scheduledDateTime.getTime()) || scheduledDateTime < minDateTime) {
         setPaymentError('Catering orders must be scheduled at least 24 hours in advance');
         return;
       }
@@ -332,8 +362,8 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
           city: deliveryCity,
           zip: deliveryZip
         } : undefined,
-        scheduledDateTime: hasCateringItems && scheduledDate && scheduledTime 
-          ? new Date(`${scheduledDate}T${scheduledTime}`).toISOString() 
+        scheduledDateTime: hasCateringItems && scheduledDate && scheduledTime
+          ? `${scheduledDate}T${scheduledTime}`
           : undefined
       };
 
@@ -571,6 +601,11 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                   <p className="text-xs text-amber-600">
                     Please call (212) 628-4500 to confirm availability for your event date.
                   </p>
+                  {scheduledDate && scheduledTime && !hasValidCateringSchedule ? (
+                    <p className="text-sm font-medium text-red-700">
+                      Please choose a catering delivery or pickup time at least 24 hours ahead before continuing to checkout.
+                    </p>
+                  ) : null}
                 </div>
               )}
 
@@ -731,8 +766,8 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
               
               <button 
                 type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-[#C41E3A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#a01830] transition-colors disabled:opacity-50 shadow-lg cursor-pointer"
+                disabled={disableCheckout}
+                className="w-full bg-[#C41E3A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#a01830] transition-colors disabled:cursor-not-allowed disabled:opacity-50 shadow-lg cursor-pointer"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -746,6 +781,12 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                   `Continue to Secure Checkout • $${grandTotal.toFixed(2)}`
                 )}
               </button>
+
+              {hasCateringItems && missingCateringSchedule ? (
+                <p className="text-center text-sm text-amber-700">
+                  Choose a catering date and time before continuing to Stripe checkout.
+                </p>
+              ) : null}
               
               <div className="flex items-center justify-center pt-2">
                 <span className="text-xs text-gray-400">Visa • Mastercard • Amex • Discover</span>

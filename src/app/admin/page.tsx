@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { getSessionCookieName, verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AdminDashboardControls } from "./AdminDashboardControls";
+import { ConfirmSubmitButton } from "./ConfirmSubmitButton";
+import { formatRestaurantDate, formatRestaurantTime } from "@/lib/timezone";
 
 export const metadata: Metadata = {
   title: 'Kitchen Dashboard — OM Indian Restaurant',
@@ -122,14 +124,6 @@ function formatCurrency(value: number | null | undefined) {
   return `$${Number(value || 0).toFixed(2)}`;
 }
 
-function formatTime(dateString: string | Date) {
-  return new Date(dateString).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-}
-
-function formatDate(dateString: string | Date) {
-  return new Date(dateString).toLocaleDateString([], { month: 'short', day: 'numeric' });
-}
-
 function renderOrderCard(order: any) {
   const nextActions = getNextActions(order.status, order.type);
   const totalItems = order.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
@@ -152,9 +146,9 @@ function renderOrderCard(order: any) {
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-400">
             <span>{order.type === 'DELIVERY' ? '🛵 Delivery' : '🛍 Pickup'}</span>
             <span>{order.customerPhone}</span>
-            <span>{formatDate(order.createdAt)} at {formatTime(order.createdAt)}</span>
+            <span>{formatRestaurantDate(order.createdAt)} at {formatRestaurantTime(order.createdAt)}</span>
             {order.pickupTime ? (
-              <span className="text-[#D4AF37]">Scheduled {formatTime(order.pickupTime)}</span>
+              <span className="text-[#D4AF37]">Scheduled {formatRestaurantTime(order.pickupTime)}</span>
             ) : null}
           </div>
         </div>
@@ -231,9 +225,12 @@ function renderOrderCard(order: any) {
               ))}
               {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' ? (
                 <form action={updateStatus.bind(null, order.id, 'CANCELLED')}>
-                  <button className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose-700">
+                  <ConfirmSubmitButton
+                    confirmMessage="Cancel this order? This can't be undone from the dashboard."
+                    className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose-700"
+                  >
                     Cancel
-                  </button>
+                  </ConfirmSubmitButton>
                 </form>
               ) : null}
             </div>
@@ -275,6 +272,8 @@ export default async function AdminDashboard({ searchParams }: AdminPageProps) {
 
   const activeOrders = filteredOrders.filter((order) => ACTIVE_STATUSES.includes(order.status));
   const completedOrders = filteredOrders.filter((order) => !ACTIVE_STATUSES.includes(order.status));
+  const pickupCount = activeOrders.filter((order) => order.type === 'PICKUP').length;
+  const deliveryCount = activeOrders.filter((order) => order.type === 'DELIVERY').length;
   const inKitchenCount = filteredOrders.filter((order) => order.status === 'IN_PROGRESS').length;
   const readyCount = filteredOrders.filter((order) => order.status === 'READY').length;
 
@@ -299,10 +298,18 @@ export default async function AdminDashboard({ searchParams }: AdminPageProps) {
 
       <div className="mx-auto max-w-7xl px-0 pb-12 md:px-4">
         {/* Stats Row */}
-        <div className="grid grid-cols-2 gap-px border-b border-stone-200 bg-stone-200 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px border-b border-stone-200 bg-stone-200 md:grid-cols-3 xl:grid-cols-5">
           <div className="bg-white px-6 py-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Active Orders</p>
             <p className="mt-2 text-4xl font-bold text-stone-950">{activeOrders.length}</p>
+          </div>
+          <div className="bg-white px-6 py-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Pickup</p>
+            <p className="mt-2 text-4xl font-bold text-stone-950">{pickupCount}</p>
+          </div>
+          <div className="bg-white px-6 py-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Delivery</p>
+            <p className="mt-2 text-4xl font-bold text-stone-950">{deliveryCount}</p>
           </div>
           <div className="bg-white px-6 py-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">In Kitchen</p>
@@ -311,12 +318,6 @@ export default async function AdminDashboard({ searchParams }: AdminPageProps) {
           <div className="bg-white px-6 py-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Ready Now</p>
             <p className="mt-2 text-4xl font-bold text-emerald-600">{readyCount}</p>
-          </div>
-          <div className="bg-white px-6 py-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-stone-500">Revenue Shown</p>
-            <p className="mt-2 text-4xl font-bold text-stone-950">
-              {formatCurrency(filteredOrders.reduce((sum, order) => sum + Number(order.total), 0))}
-            </p>
           </div>
         </div>
 
@@ -394,7 +395,7 @@ export default async function AdminDashboard({ searchParams }: AdminPageProps) {
                         <span className="ml-2 font-mono text-xs text-stone-400">#{order.id.slice(0, 8).toUpperCase()}</span>
                       </p>
                       <p className="text-sm text-stone-500">
-                        {order.customerPhone} · {order.type === 'DELIVERY' ? 'Delivery' : 'Pickup'} · {formatDate(order.createdAt)} at {formatTime(order.createdAt)}
+                        {order.customerPhone} · {order.type === 'DELIVERY' ? 'Delivery' : 'Pickup'} · {formatRestaurantDate(order.createdAt)} at {formatRestaurantTime(order.createdAt)}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
