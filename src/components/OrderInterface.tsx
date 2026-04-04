@@ -85,6 +85,84 @@ interface OrderInterfaceProps {
   omSpecialMenu?: OmSpecialMenu;
 }
 
+type ToastPendingPayment = {
+  provider: "TOAST";
+  orderId: string;
+  amountCents: number;
+  tipCents: number;
+  publicKey: string;
+  keyId: string;
+  orderData: {
+    customerName: string;
+    customerPhone: string;
+    type: "PICKUP" | "DELIVERY";
+    notes: string;
+    items: { menuItemId: string; quantity: number; note?: string }[];
+    tip: number;
+    deliveryAddress?: {
+      street?: string;
+      apt?: string;
+      city?: string;
+      zip?: string;
+    };
+    scheduledDateTime?: string;
+  };
+};
+
+function pemToArrayBuffer(pem: string) {
+  const base64Value = pem
+    .replace(/-----BEGIN PUBLIC KEY-----/g, "")
+    .replace(/-----END PUBLIC KEY-----/g, "")
+    .replace(/\s+/g, "");
+  const binaryValue = window.atob(base64Value);
+  const bytes = new Uint8Array(binaryValue.length);
+
+  for (let index = 0; index < binaryValue.length; index += 1) {
+    bytes[index] = binaryValue.charCodeAt(index);
+  }
+
+  return bytes.buffer;
+}
+
+async function encryptToastCardData(input: {
+  publicKey: string;
+  cardNumber: string;
+  expMonth: string;
+  expYear: string;
+  cvv: string;
+  zip: string;
+}) {
+  const cryptoKey = await window.crypto.subtle.importKey(
+    "spki",
+    pemToArrayBuffer(input.publicKey),
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256",
+    },
+    false,
+    ["encrypt"],
+  );
+
+  const payload = JSON.stringify({
+    cardNumber: input.cardNumber.replace(/\s/g, ""),
+    expirationMonth: input.expMonth,
+    expirationYear: input.expYear,
+    cvv: input.cvv,
+    postalCode: input.zip,
+    country: "US",
+  });
+
+  const encryptedBuffer = await window.crypto.subtle.encrypt(
+    {
+      name: "RSA-OAEP",
+    },
+    cryptoKey,
+    new TextEncoder().encode(payload),
+  );
+
+  return window.btoa(String.fromCharCode(...new Uint8Array(encryptedBuffer)));
+}
+
 export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, cateringMenu, omSpecialMenu }: OrderInterfaceProps) {
   const { items, addItem, removeItem, updateItem, total } = useCart();
   const searchParams = useSearchParams();
@@ -181,6 +259,12 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
   const [customTip, setCustomTip] = useState('');
   const [customTipType, setCustomTipType] = useState<'$' | '%'>('$'); // $ or %
   const [paymentError, setPaymentError] = useState('');
+  const [toastPendingPayment, setToastPendingPayment] = useState<ToastPendingPayment | null>(null);
+  const [toastCardNumber, setToastCardNumber] = useState('');
+  const [toastCardExpiryMonth, setToastCardExpiryMonth] = useState('');
+  const [toastCardExpiryYear, setToastCardExpiryYear] = useState('');
+  const [toastCardCvv, setToastCardCvv] = useState('');
+  const [toastCardZip, setToastCardZip] = useState('');
   
   // Scheduling State (required for catering orders)
   const [scheduledDate, setScheduledDate] = useState('');
@@ -378,11 +462,82 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
       if (!res.ok) {
         throw new Error(data.error || 'Payment failed');
       }
-      
-      window.location.href = data.checkoutUrl;
+
+      if (data.provider === 'STRIPE' && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+
+      if (data.provider === 'TOAST') {
+        setToastPendingPayment({
+          ...data,
+          orderData,
+        });
+        return;
+      }
+
+      throw new Error('Unknown payment provider');
     } catch (err) {
       console.error(err);
       setPaymentError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleToastPayment = async () => {
+    if (!toastPendingPayment) {
+      return;
+    }
+
+    if (
+      !toastCardNumber.trim()
+      || !toastCardExpiryMonth.trim()
+      || !toastCardExpiryYear.trim()
+      || !toastCardCvv.trim()
+      || !toastCardZip.trim()
+    ) {
+      setPaymentError('Enter your full card details to continue.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setPaymentError('');
+
+    try {
+      const encryptedCardData = await encryptToastCardData({
+        publicKey: toastPendingPayment.publicKey,
+        cardNumber: toastCardNumber,
+        expMonth: toastCardExpiryMonth,
+        expYear: toastCardExpiryYear,
+        cvv: toastCardCvv,
+        zip: toastCardZip,
+      });
+
+      const response = await fetch('/api/payment/toast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: toastPendingPayment.orderId,
+          orderData: toastPendingPayment.orderData,
+          encryptedCardData,
+          cardFirst6: toastCardNumber.replace(/\s/g, '').slice(0, 6),
+          cardLast4: toastCardNumber.replace(/\s/g, '').slice(-4),
+          postalCode: toastCardZip,
+          country: 'US',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Toast payment failed');
+      }
+
+      window.location.href = data.successUrl || `/order/success?order_id=${toastPendingPayment.orderId}`;
+    } catch (error) {
+      console.error(error);
+      setPaymentError(error instanceof Error ? error.message : 'Toast payment failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -393,7 +548,10 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
         <button 
-          onClick={() => setIsCheckout(false)} 
+          onClick={() => {
+            setIsCheckout(false);
+            setToastPendingPayment(null);
+          }} 
           className="mb-6 text-[#C41E3A] font-medium hover:underline flex items-center gap-2 cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -756,27 +914,125 @@ export default function OrderInterface({ dinnerCategories, lunchMenu, barMenu, c
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Secure payment via Stripe
+                  {toastPendingPayment ? 'Secure payment via Toast' : 'Secure payment via Stripe'}
                 </div>
               </div>
+
+              {toastPendingPayment ? (
+                <div className="border-t pt-5 space-y-4">
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    Complete your card payment below to send this order into Toast.
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium text-gray-700">Card Number</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="cc-number"
+                        value={toastCardNumber}
+                        onChange={e => setToastCardNumber(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
+                        placeholder="1234 5678 9012 3456"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium text-gray-700">ZIP Code</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="postal-code"
+                        value={toastCardZip}
+                        onChange={e => setToastCardZip(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
+                        placeholder="10028"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium text-gray-700">Exp. Month</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="cc-exp-month"
+                        value={toastCardExpiryMonth}
+                        onChange={e => setToastCardExpiryMonth(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
+                        placeholder="MM"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium text-gray-700">Exp. Year</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="cc-exp-year"
+                        value={toastCardExpiryYear}
+                        onChange={e => setToastCardExpiryYear(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
+                        placeholder="YYYY"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-2 block text-sm font-medium text-gray-700">CVV</span>
+                      <input
+                        type="password"
+                        inputMode="numeric"
+                        autoComplete="cc-csc"
+                        value={toastCardCvv}
+                        onChange={e => setToastCardCvv(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-[#C41E3A] focus:border-transparent"
+                        placeholder="123"
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : null}
               
-              <button 
-                type="submit" 
-                disabled={disableCheckout}
-                className="w-full bg-[#C41E3A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#a01830] transition-colors disabled:cursor-not-allowed disabled:opacity-50 shadow-lg cursor-pointer"
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Redirecting to Stripe...
-                  </span>
-                ) : (
-                  `Continue to Secure Checkout • $${grandTotal.toFixed(2)}`
-                )}
-              </button>
+              {toastPendingPayment ? (
+                <button
+                  type="button"
+                  onClick={handleToastPayment}
+                  disabled={disableCheckout || isSubmitting}
+                  className="w-full bg-[#C41E3A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#a01830] transition-colors disabled:cursor-not-allowed disabled:opacity-50 shadow-lg cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Processing secure payment...
+                    </span>
+                  ) : (
+                    `Pay Securely • $${grandTotal.toFixed(2)}`
+                  )}
+                </button>
+              ) : (
+                <button 
+                  type="submit" 
+                  disabled={disableCheckout}
+                  className="w-full bg-[#C41E3A] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#a01830] transition-colors disabled:cursor-not-allowed disabled:opacity-50 shadow-lg cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Redirecting to Stripe...
+                    </span>
+                  ) : (
+                    `Continue to Secure Checkout • $${grandTotal.toFixed(2)}`
+                  )}
+                </button>
+              )}
 
               {hasCateringItems && missingCateringSchedule ? (
                 <p className="text-center text-sm text-amber-700">

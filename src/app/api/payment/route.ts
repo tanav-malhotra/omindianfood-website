@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeOrderItems } from "@/lib/order-pricing";
+import { getPaymentProvider, getToastRuntimeConfig } from "@/lib/payments/env";
+import { routePaymentByProvider } from "@/lib/payments/provider";
 import { getBaseUrl, getStripe } from "@/lib/stripe";
 import { parseRestaurantLocalDateTime } from "@/lib/timezone";
 
@@ -113,8 +115,6 @@ export async function POST(request: Request) {
     });
     orderId = order.id;
 
-    const stripe = getStripe();
-    const baseUrl = getBaseUrl();
     const lineItems: Array<{
       price_data: {
         currency: "usd";
@@ -161,30 +161,6 @@ export async function POST(request: Request) {
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      success_url: `${baseUrl}/order/success?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/order?checkout=cancelled`,
-      submit_type: "pay",
-      line_items: lineItems,
-      phone_number_collection: {
-        enabled: true,
-      },
-      metadata: {
-        orderId: order.id,
-        orderType: type || "PICKUP",
-      },
-      payment_intent_data: {
-        metadata: {
-          orderId: order.id,
-        },
-      },
-    });
-
-    if (!session.url) {
-      throw new Error("Stripe checkout session did not return a URL.");
-    }
-
     if (tipAmount > 0) {
       await prisma.order.update({
         where: { id: order.id },
@@ -196,10 +172,56 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json({
-      checkoutUrl: session.url,
-      orderId: order.id,
-    });
+    const paymentResult = await routePaymentByProvider(
+      getPaymentProvider(),
+      async () => {
+        const stripe = getStripe();
+        const baseUrl = getBaseUrl();
+        const session = await stripe.checkout.sessions.create({
+          mode: "payment",
+          success_url: `${baseUrl}/order/success?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/order?checkout=cancelled`,
+          submit_type: "pay",
+          line_items: lineItems,
+          phone_number_collection: {
+            enabled: true,
+          },
+          metadata: {
+            orderId: order.id,
+            orderType: type || "PICKUP",
+          },
+          payment_intent_data: {
+            metadata: {
+              orderId: order.id,
+            },
+          },
+        });
+
+        if (!session.url) {
+          throw new Error("Stripe checkout session did not return a URL.");
+        }
+
+        return {
+          provider: "STRIPE" as const,
+          checkoutUrl: session.url,
+          orderId: order.id,
+        };
+      },
+      async () => {
+        const toastConfig = getToastRuntimeConfig();
+
+        return {
+          provider: "TOAST" as const,
+          orderId: order.id,
+          amountCents: Math.round((total - tipAmount) * 100),
+          tipCents: Math.round(tipAmount * 100),
+          publicKey: toastConfig.rsaPublicKey,
+          keyId: toastConfig.keyId,
+        };
+      },
+    );
+
+    return NextResponse.json(paymentResult);
   } catch (error) {
     console.error("Checkout session creation failed:", error);
     if (orderId) {

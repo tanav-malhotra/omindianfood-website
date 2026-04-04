@@ -23,11 +23,11 @@ export class OrderDispatcher {
       }
     });
 
-    // Update status if dispatched successfully to main channel
+    // Keep PAID as the first staff-visible post-payment state in the dashboard.
     if (results[0].status === 'fulfilled') {
       await prisma.order.update({
         where: { id: orderId },
-        data: { status: 'SUBMITTED' }
+        data: { status: 'PAID' }
       });
     }
   }
