@@ -37,8 +37,12 @@ yarn-error.log*
 .vercel
 
 # local agent / editor metadata
+.agents/
 .claude/
+.codex/
 .cursor/
+AGENTS.md
+CLAUDE.md
 
 # typescript
 *.tsbuildinfo
