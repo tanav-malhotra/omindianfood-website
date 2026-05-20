@@ -66,3 +66,12 @@ model OrderItem {
   name       String    // Snapshot of name
   note       String?   // Free text note
 }
+
+model IntegrationToken {
+  id           String   @id
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

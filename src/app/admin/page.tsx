@@ -16,13 +16,15 @@ export const metadata: Metadata = {
   },
 };
 
-const ACTIVE_STATUSES = ['PAID', 'IN_PROGRESS', 'READY'];
-const STATUS_OPTIONS = ['PAID', 'IN_PROGRESS', 'READY', 'COMPLETED', 'CANCELLED'] as const;
+const ACTIVE_STATUSES = ['PAID', 'IN_PROGRESS', 'READY', 'CHECKMATE_FAILED'];
+const STATUS_OPTIONS = ['PAID', 'IN_PROGRESS', 'READY', 'COMPLETED', 'CANCELLED', 'CHECKMATE_FAILED'] as const;
 
 const STATUS_STYLES: Record<string, string> = {
   PAID: 'bg-sky-100 text-sky-800 ring-1 ring-sky-200',
   IN_PROGRESS: 'bg-amber-100 text-amber-900 ring-1 ring-amber-200',
   READY: 'bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200',
+  SENT_TO_CHECKMATE: 'bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200',
+  CHECKMATE_FAILED: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200',
   COMPLETED: 'bg-stone-200 text-stone-700 ring-1 ring-stone-300',
   CANCELLED: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200',
 };
@@ -31,6 +33,8 @@ const STATUS_LABELS: Record<string, string> = {
   PAID: 'Paid',
   IN_PROGRESS: 'In Progress',
   READY: 'Ready',
+  SENT_TO_CHECKMATE: 'Sent to Checkmate',
+  CHECKMATE_FAILED: 'Checkmate Failed',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
 };
